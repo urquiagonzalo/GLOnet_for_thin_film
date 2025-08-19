@@ -8,7 +8,8 @@ class Generator(nn.Module):
         super().__init__()
 
         self.noise_dim = params.noise_dim
-        self.thickness_sup = params.thickness_sup
+        self.thickness_sup = params.thickness_sup #GU:Define el espesor máximo posible
+         self.thickness_l = params.thickness_l    #GU:Define el espesor mínimo posible
         self.N_layers = params.N_layers
         self.M_materials = params.M_materials
         self.n_database = params.n_database.view(1, 1, params.M_materials, -1).cuda() # 1 x 1 x number of mat x number of freq
@@ -22,8 +23,10 @@ class Generator(nn.Module):
     def forward(self, noise, alpha):
         net = self.FC(noise)
         net = net.view(-1, self.N_layers, self.M_materials + 1)
-        
-        thicknesses = torch.sigmoid(net[:, :, 0]) * self.thickness_sup
+        #GU: Convierte la salida de la red neuronal (net[:, :, 0]) a un valor entre 0 y 1 usando sigmoid. Luego escala ese valor al rango entre 0 y thickness_sup.
+        #thicknesses = torch.sigmoid(net[:, :, 0]) * self.thickness_sup  
+        #GU: límite inferior y superior para la salida de la red
+        thicknesses = torch.sigmoid(net[:, :, 0]) * (self.thickness_sup - self.thickness_l) + self.thickness_l
         X = net[:, :, 1:]
         
         P = F.softmax(X * alpha, dim = 2).unsqueeze(-1) # batch size x number of layer x number of mat x 1

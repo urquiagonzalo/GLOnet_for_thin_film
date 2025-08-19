@@ -9,7 +9,7 @@ class Generator(nn.Module):
 
         self.noise_dim = params.noise_dim
         self.thickness_sup = params.thickness_sup #GU:Define el espesor máximo posible
-         self.thickness_l = params.thickness_l    #GU:Define el espesor mínimo posible
+        self.thickness_l = params.thickness_l    #GU:Define el espesor mínimo posible
         self.N_layers = params.N_layers
         self.M_materials = params.M_materials
         self.n_database = params.n_database.view(1, 1, params.M_materials, -1).cuda() # 1 x 1 x number of mat x number of freq

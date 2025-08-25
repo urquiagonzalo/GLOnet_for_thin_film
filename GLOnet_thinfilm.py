@@ -178,8 +178,9 @@ class GLOnet():
         plt.yticks(fontsize=14)
 
         # Guardar la pérdida como .txt con el nombre basado en la seed
-        #loss_array = np.array(self.loss_training)
-        loss_array = np.array([loss_item.cpu().item()]) 
+        # Convertir los tensores a CPU y luego a numpy
+        loss_array = np.array([loss_item.cpu().item() if torch.is_tensor(loss_item) else loss_item 
+                               for loss_item in self.loss_training])
         filename = f"loss_training_seed_{seed}.txt"
         np.savetxt(filename, loss_array)
     

@@ -170,6 +170,7 @@ class GLOnet():
         
     def viz_training(self,seed): 
         print(seed)
+        from google.colab import files
         plt.figure(figsize = (20, 5))
         plt.subplot(131)
         plt.plot(self.loss_training)

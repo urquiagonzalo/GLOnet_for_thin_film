@@ -168,7 +168,7 @@ class GLOnet():
         self.thicknesses_training.append(thicknesses.mean().detach())
         self.refractive_indices_training.append(refractive_indices.mean().detach())
         
-    def viz_training(self,seed):  #def viz_training(self):
+    def viz_training(self): 
         plt.figure(figsize = (20, 5))
         plt.subplot(131)
         plt.plot(self.loss_training)
@@ -176,10 +176,7 @@ class GLOnet():
         plt.xlabel('Iterations', fontsize=18)
         plt.xticks(fontsize=14)
         plt.yticks(fontsize=14)
-        #Guardo la Loss de cada semilla
-        with open(f"LossSemilla.{seed}.txt", 'w') as f:
-            f.write(', '.join([f"{x:.4f}" for x in self.loss_training]) + '\n\n')
-        files.download(f"LossSemilla.{seed}.txt")
+
 
 
         

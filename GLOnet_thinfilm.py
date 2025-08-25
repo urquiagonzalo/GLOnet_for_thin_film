@@ -178,7 +178,8 @@ class GLOnet():
         plt.yticks(fontsize=14)
 
         # Guardar la pérdida como .txt con el nombre basado en la seed
-        loss_array = np.array(self.loss_training)
+        #loss_array = np.array(self.loss_training)
+        loss_array = np.array([loss_item.cpu().item() 
         filename = f"loss_training_seed_{seed}.txt"
         np.savetxt(filename, loss_array)
     

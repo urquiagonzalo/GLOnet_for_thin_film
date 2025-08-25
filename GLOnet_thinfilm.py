@@ -178,7 +178,7 @@ class GLOnet():
         plt.yticks(fontsize=14)
         #Guardo la Loss de cada semilla
         with open(f"LossSemilla.{seed}.txt", 'w') as f:
-            f.write(', '.join([f"{x:.4f}" for x in self.loss_training) + '\n\n')
+            f.write(', '.join([f"{x:.4f}" for x in self.loss_training]) + '\n\n')
         files.download(f"LossSemilla.{seed}.txt")
 
 

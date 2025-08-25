@@ -169,6 +169,7 @@ class GLOnet():
         self.refractive_indices_training.append(refractive_indices.mean().detach())
         
     def viz_training(self,seed): 
+        print(seed)
         plt.figure(figsize = (20, 5))
         plt.subplot(131)
         plt.plot(self.loss_training)
@@ -176,16 +177,10 @@ class GLOnet():
         plt.xlabel('Iterations', fontsize=18)
         plt.xticks(fontsize=14)
         plt.yticks(fontsize=14)
+        with open(f"loss.{seed}.txt", 'w') as f:
+            f.write(', '.join([f"{x:.4f}" for x in self.loss_training]) + '\n\n')
+            files.download(f"loss.{seed}.txt")
 
-        # Guardar la pérdida como .txt con el nombre basado en la seed
-        # Convertir los tensores a CPU y luego a numpy
-        loss_array = np.array([loss_item.cpu().item() if torch.is_tensor(loss_item) else loss_item 
-                               for loss_item in self.loss_training])
-        filename = f"loss_training_seed_{seed}.txt"
-        np.savetxt(filename, loss_array)
-    
-        # Descargar el archivo
-        files.download(filename)
 
 
 

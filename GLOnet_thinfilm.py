@@ -169,15 +169,14 @@ class GLOnet():
         self.refractive_indices_training.append(refractive_indices.mean().detach())
         
     def viz_training(self,seed): 
-        print(seed)
         from google.colab import files
-        plt.figure(figsize = (20, 5))
-        plt.subplot(131)
-        plt.plot(self.loss_training)
-        plt.ylabel('Loss', fontsize=18)
-        plt.xlabel('Iterations', fontsize=18)
-        plt.xticks(fontsize=14)
-        plt.yticks(fontsize=14)
+        #plt.figure(figsize = (20, 5))
+        #plt.subplot(131)
+        #plt.plot(self.loss_training)
+        #plt.ylabel('Loss', fontsize=18)
+        #plt.xlabel('Iterations', fontsize=18)
+        #plt.xticks(fontsize=14)
+        #plt.yticks(fontsize=14)
         with open(f"loss{seed}.txt", 'w') as f:
             f.write(', '.join([f"{x:.4f}" for x in self.loss_training]) + '\n\n')
             files.download(f"loss{seed}.txt")

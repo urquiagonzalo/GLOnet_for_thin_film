@@ -157,6 +157,10 @@ class GLOnet():
     
     def global_loss_function(self, reflection):
         return -torch.mean(torch.exp(-torch.mean(torch.pow(reflection - self.target_reflection, 2), dim=(1,2,3))/self.sigma))
+        from google.colab import files
+        with open(f"MSE{seed}.txt", 'w') as f:
+            f.write(', '.join([f"{x:.4f}" for x in -torch.mean(torch.pow(reflection - self.target_reflection, 2)]) + '\n\n')
+            files.download(f"MSE{seed}.txt")
 
     def global_loss_function_robust(self, reflection, thicknesses):
         metric = torch.mean(torch.pow(reflection - self.target_reflection, 2), dim=(1,2,3))
@@ -169,7 +173,6 @@ class GLOnet():
         self.refractive_indices_training.append(refractive_indices.mean().detach())
         
     def viz_training(self,seed): 
-        from google.colab import files
         #plt.figure(figsize = (20, 5))
         #plt.subplot(131)
         #plt.plot(self.loss_training)
@@ -177,6 +180,7 @@ class GLOnet():
         #plt.xlabel('Iterations', fontsize=18)
         #plt.xticks(fontsize=14)
         #plt.yticks(fontsize=14)
+        from google.colab import files
         with open(f"loss{seed}.txt", 'w') as f:
             f.write(', '.join([f"{x:.4f}" for x in self.loss_training]) + '\n\n')
             files.download(f"loss{seed}.txt")

@@ -91,7 +91,7 @@ class GLOnet():
                 self.optimizer.zero_grad()
 
                 # construct the loss 
-                g_loss = self.global_loss_function(reflection)
+                g_loss = self.global_loss_function(seed, reflection)
                 
                 
                 # record history

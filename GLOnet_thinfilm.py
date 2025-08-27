@@ -154,13 +154,6 @@ class GLOnet():
         
     def sample_z(self, batch_size):
         return (torch.randn(batch_size, self.noise_dim, requires_grad=True)).type(self.dtype)
-
-    def mse(self, seed, reflection): #creo esta funcion solo para descargar mse
-        from google.colab import files
-        with open(f"MSE{seed}.txt", 'w') as f:
-            f.write(', '.join([f"{x:.4f}" for x in torch.mean(torch.pow(reflection - self.target_reflection, 2))]) + '\n\n')
-            files.download(f"MSE{seed}.txt")
-        return torch.mean(torch.pow(reflection - self.target_reflection, 2))
     
     def global_loss_function(self, reflection):
         return -torch.mean(torch.exp(-torch.mean(torch.pow(reflection - self.target_reflection, 2), dim=(1,2,3))/self.sigma))

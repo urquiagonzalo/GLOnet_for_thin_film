@@ -44,7 +44,7 @@ class GLOnet():
         else:
             self.materials = params.materials
             self.matdatabase = params.matdatabase
-
+sss
         self.n_bot = params.n_bot.type(self.dtype)  # number of frequencies or 1
         self.n_top = params.n_top.type(self.dtype)  # number of frequencies or 1
         self.k = params.k.type(self.dtype)  # number of frequencies
@@ -154,9 +154,16 @@ class GLOnet():
         
     def sample_z(self, batch_size):
         return (torch.randn(batch_size, self.noise_dim, requires_grad=True)).type(self.dtype)
+
+    def mse_function(self, reflection):
+        # Supón que ya tienes el mse_squared_total calculado
+        mse_squared_total = torch.mean(torch.pow(reflection - self.target_reflection, 2), dim=(1,2,3)).mean()
+        # Guardarlo en un archivo .txt
+        with open("mse_squared.txt", "w") as f:
+            f.write(f"MSE^2: {mse_squared_total.item()}\n")
+        return mse_squared_total.item()    
     
     def global_loss_function(self, reflection):
-        a = torch.mean(torch.pow(reflection - self.target_reflection, 2))
         return -torch.mean(torch.exp(-torch.mean(torch.pow(reflection - self.target_reflection, 2), dim=(1,2,3))/self.sigma))
         
     def global_loss_function_robust(self, reflection, thicknesses):

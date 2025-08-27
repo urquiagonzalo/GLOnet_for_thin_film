@@ -162,10 +162,9 @@ class GLOnet():
             files.download(f"MSE{seed}.txt")
         return torch.mean(torch.pow(reflection - self.target_reflection, 2))
     
-    def global_loss_function(self, seed, reflection):
+    def global_loss_function(self, reflection):
         return -torch.mean(torch.exp(-torch.mean(torch.pow(reflection - self.target_reflection, 2), dim=(1,2,3))/self.sigma))
-
-
+        
     def global_loss_function_robust(self, reflection, thicknesses):
         metric = torch.mean(torch.pow(reflection - self.target_reflection, 2), dim=(1,2,3))
         dmdt = torch.autograd.grad(metric.mean(), thicknesses, create_graph=True)

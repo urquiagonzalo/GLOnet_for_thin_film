@@ -92,8 +92,13 @@ class GLOnet():
 
                 # construct the loss 
                 g_loss = self.global_loss_function(reflection)
+                mse_loss = self.mse_function(reflection)       #GONZALO
                 
-                
+                from google.colab import files
+                with open('mse_squared.txt', "w") as f:
+                    f.write(', '.join([f"{x:.4f}" for x in mse_loss]) + '\n\n')
+                    files.download('mse_squared.txt')
+
                 # record history
                 self.record_history(g_loss, thicknesses, refractive_indices)
                 
@@ -155,16 +160,9 @@ class GLOnet():
     def sample_z(self, batch_size):
         return (torch.randn(batch_size, self.noise_dim, requires_grad=True)).type(self.dtype)
 
-    def mse_function(self, reflection):
-        from google.colab import files
-        # Supón que ya tienes el mse_squared_total calculado
-        mse_squared_total = torch.mean(torch.pow(reflection - self.target_reflection, 2), dim=(1,2,3)).mean()
-        # Guardarlo en un archivo .txt
-        with open("mse_squared.txt", "w") as f:
-            f.write(f"MSE^2: {mse_squared_total.item()}\n")
-            files.download('mse_squared.txt')
-        return mse_squared_total.item()    
-    
+    def mse_function(self, reflection):                                                          #GU-mse
+        return torch.mean(torch.pow(reflection - self.target_reflection, 2))                     #GU-mse
+         
     def global_loss_function(self, reflection):
         return -torch.mean(torch.exp(-torch.mean(torch.pow(reflection - self.target_reflection, 2), dim=(1,2,3))/self.sigma))
         

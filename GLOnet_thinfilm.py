@@ -162,7 +162,7 @@ class GLOnet():
         # Guardarlo en un archivo .txt
         with open("mse_squared.txt", "w") as f:
             f.write(f"MSE^2: {mse_squared_total.item()}\n")
-            files.download(mse_squared.txt")
+            files.download('mse_squared.txt')
         return mse_squared_total.item()    
     
     def global_loss_function(self, reflection):

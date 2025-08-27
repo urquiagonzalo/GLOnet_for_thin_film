@@ -156,11 +156,13 @@ class GLOnet():
         return (torch.randn(batch_size, self.noise_dim, requires_grad=True)).type(self.dtype)
 
     def mse_function(self, reflection):
+        from google.colab import files
         # Supón que ya tienes el mse_squared_total calculado
         mse_squared_total = torch.mean(torch.pow(reflection - self.target_reflection, 2), dim=(1,2,3)).mean()
         # Guardarlo en un archivo .txt
         with open("mse_squared.txt", "w") as f:
             f.write(f"MSE^2: {mse_squared_total.item()}\n")
+            files.download(mse_squared.txt")
         return mse_squared_total.item()    
     
     def global_loss_function(self, reflection):

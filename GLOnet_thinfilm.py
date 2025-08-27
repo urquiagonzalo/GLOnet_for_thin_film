@@ -44,7 +44,7 @@ class GLOnet():
         else:
             self.materials = params.materials
             self.matdatabase = params.matdatabase
-sss
+
         self.n_bot = params.n_bot.type(self.dtype)  # number of frequencies or 1
         self.n_top = params.n_top.type(self.dtype)  # number of frequencies or 1
         self.k = params.k.type(self.dtype)  # number of frequencies

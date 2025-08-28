@@ -100,7 +100,7 @@ class GLOnet():
                     #files.download('mse_squared.txt')
 
                 # record history
-                self.record_history(g_loss, thicknesses, refractive_indices)
+                self.record_history(g_loss, thicknesses, refractive_indices,mse_loss)
                 
                 # train the generator
                 g_loss.backward()

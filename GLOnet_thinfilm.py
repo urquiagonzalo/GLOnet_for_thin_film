@@ -57,6 +57,7 @@ class GLOnet():
         self.loss_training = []
         self.refractive_indices_training = []
         self.thicknesses_training = []
+        self.mse2 = []
         
         
     def train(self):

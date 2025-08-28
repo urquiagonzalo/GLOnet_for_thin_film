@@ -92,15 +92,9 @@ class GLOnet():
 
                 # construct the loss 
                 g_loss = self.global_loss_function(reflection)
-                mse_loss = self.mse_function(reflection)       #GONZALO
-                
-                #from google.colab import files
-                #with open('mse_squared.txt', "w") as f:
-                    #f.write(', '.join([f"{x:.4f}" for x in mse_loss]) + '\n\n')
-                    #files.download('mse_squared.txt')
 
                 # record history
-                self.record_history(g_loss, thicknesses, refractive_indices,mse_loss)
+                self.record_history(g_loss, thicknesses, refractive_indices)
                 
                 # train the generator
                 g_loss.backward()
@@ -171,7 +165,7 @@ class GLOnet():
         dmdt = torch.autograd.grad(metric.mean(), thicknesses, create_graph=True)
         return -torch.mean(torch.exp((-metric - self.robust_coeff *torch.mean(torch.abs(dmdt[0]), dim=1))/self.sigma))
 
-    def record_history(self, loss, thicknesses, refractive_indices):
+    def record_history(self, loss, thicknesses, refractive_indices,mse_loss):
         self.loss_training.append(loss.detach())
         self.thicknesses_training.append(thicknesses.mean().detach())
         self.refractive_indices_training.append(refractive_indices.mean().detach())

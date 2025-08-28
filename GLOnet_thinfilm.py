@@ -94,10 +94,10 @@ class GLOnet():
                 g_loss = self.global_loss_function(reflection)
                 mse_loss = self.mse_function(reflection)       #GONZALO
                 
-                from google.colab import files
-                with open('mse_squared.txt', "w") as f:
-                    f.write(', '.join([f"{x:.4f}" for x in mse_loss]) + '\n\n')
-                    files.download('mse_squared.txt')
+                #from google.colab import files
+                #with open('mse_squared.txt', "w") as f:
+                    #f.write(', '.join([f"{x:.4f}" for x in mse_loss]) + '\n\n')
+                    #files.download('mse_squared.txt')
 
                 # record history
                 self.record_history(g_loss, thicknesses, refractive_indices)

@@ -177,19 +177,19 @@ class GLOnet():
         self.loss_training.append(loss.detach())
         self.thicknesses_training.append(thicknesses.mean().detach())
         self.refractive_indices_training.append(refractive_indices.mean().detach())
-        #self.mse_training.append(mse.detach().item())
+        self.mse_training.append(mse.detach().item())
         #self.mse_training.append(mse.mean().detach().cpu().item())
         #self.mse_training.append(mse.detach())                                        #GU: mse
         
     def viz_training(self,seed): 
-        plt.figure(figsize = (20, 5))
-        plt.subplot(131)
+        #plt.figure(figsize = (20, 5))
+        #plt.subplot(131)
         plt.plot(self.loss_training)
         #plt.plot(self.mse_training , color='orange')  # GU: grafico MSE
-        plt.ylabel('Loss', fontsize=18)
-        plt.xlabel('Iterations', fontsize=18)
-        plt.xticks(fontsize=14)
-        plt.yticks(fontsize=14)
+        #plt.ylabel('Loss', fontsize=18)
+        #plt.xlabel('Iterations', fontsize=18)
+        #plt.xticks(fontsize=14)
+        #plt.yticks(fontsize=14)
         from google.colab import files
         with open(f"loss{seed}.txt", 'w') as f:
             f.write(', '.join([f"{x:.4f}" for x in self.loss_training]) + '\n\n')

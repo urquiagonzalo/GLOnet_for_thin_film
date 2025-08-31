@@ -183,9 +183,9 @@ class GLOnet():
         #plt.xticks(fontsize=14)
         #plt.yticks(fontsize=14)
         from google.colab import files
-        #with open(f"loss{seed}.txt", 'w') as f:
-            #f.write(', '.join([f"{x:.4f}" for x in self.loss_training]) + '\n\n')
-            #files.download(f"loss{seed}.txt")
+        with open(f"loss{seed}.txt", 'w') as f:
+            f.write(', '.join([f"{x:.4f}" for x in self.loss_training]) + '\n\n')
+            files.download(f"loss{seed}.txt")
         with open(f"mse{seed}.txt", 'w') as f:    
             f.write(', '.join([f"{x:.4f}" for x in self.mse_training]) + '\n\n')
             files.download(f"mse{seed}.txt")    

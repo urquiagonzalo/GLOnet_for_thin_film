@@ -157,7 +157,7 @@ class GLOnet():
         return (torch.randn(batch_size, self.noise_dim, requires_grad=True)).type(self.dtype)
 
     def global_mse_function(self, reflection):
-        return torch.mean(torch.pow(reflection - self.target_reflection, 2)) #, dim=(1,2,3))
+        return torch.mean(torch.pow(reflection - self.target_reflection, 2), dim=(1,2,3))
               
     def global_loss_function(self, reflection):
         return -torch.mean(torch.exp(-torch.mean(torch.pow(reflection - self.target_reflection, 2), dim=(1,2,3))/self.sigma))

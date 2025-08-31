@@ -178,7 +178,7 @@ class GLOnet():
         plt.figure(figsize = (20, 5))
         plt.subplot(131)
         plt.plot(self.loss_training, color='blue')
-        plt.plot(self.mse_training , color='orange')  # GU: grafico MSE
+        #plt.plot(self.mse_training , color='orange')  # GU: grafico MSE
         plt.ylabel('Loss', fontsize=18)
         plt.xlabel('Iterations', fontsize=18)
         plt.xticks(fontsize=14)

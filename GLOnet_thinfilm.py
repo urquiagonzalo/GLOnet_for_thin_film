@@ -158,9 +158,14 @@ class GLOnet():
 
     def global_mse_function(self, reflection):
         return torch.mean(torch.pow(reflection - self.target_reflection, 2), dim=(1,2,3))
-              
+
     def global_loss_function(self, reflection):
-        return -torch.mean(torch.exp(-torch.mean(torch.pow(reflection - self.target_reflection, 2), dim=(1,2,3))/self.sigma))
+        mse = self.global_mse_function(reflection)
+        return -torch.mean(torch.exp(-mse)/self.sigma)
+        
+    
+    #def global_loss_function(self, reflection):
+    #    return -torch.mean(torch.exp(-torch.mean(torch.pow(reflection - self.target_reflection, 2), dim=(1,2,3))/self.sigma))
         
     def global_loss_function_robust(self, reflection, thicknesses):
         metric = torch.mean(torch.pow(reflection - self.target_reflection, 2), dim=(1,2,3))
@@ -174,6 +179,7 @@ class GLOnet():
         #self.mse_training.append(mse.detach().item())
         self.mse_training.append(mse.detach().mean().cpu().item())
         #self.mse_training.append(mse.detach())                                        #GU: mse
+    
         
     def viz_training(self,seed): 
         plt.figure(figsize = (20, 5))

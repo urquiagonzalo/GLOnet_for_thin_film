@@ -172,14 +172,19 @@ class GLOnet():
         dmdt = torch.autograd.grad(metric.mean(), thicknesses, create_graph=True)
         return -torch.mean(torch.exp((-metric - self.robust_coeff *torch.mean(torch.abs(dmdt[0]), dim=1))/self.sigma))
 
-    def record_history(self, loss, thicknesses, refractive_indices,mse):              #GU: mse
-        self.loss_training.append(loss.detach())
-        self.thicknesses_training.append(thicknesses.mean().detach())
-        self.refractive_indices_training.append(refractive_indices.mean().detach())
+    #def record_history(self, loss, thicknesses, refractive_indices,mse):              #GU: mse
+        #self.loss_training.append(loss.detach())
+        #self.thicknesses_training.append(thicknesses.mean().detach())
+        #self.refractive_indices_training.append(refractive_indices.mean().detach())
         #self.mse_training.append(mse.detach().item())
-        self.mse_training.append(mse.mean().detach().cpu().item())
+        #self.mse_training.append(mse.mean().detach().cpu().item())
         #self.mse_training.append(mse.detach())                                        #GU: mse
-    
+
+    def record_history(self, loss, thicknesses, refractive_indices, mse):
+        self.loss_training.append(loss.detach().cpu().item())    # PASAR A CPU y item()
+        self.thicknesses_training.append(thicknesses.mean().detach().cpu().item())
+        self.refractive_indices_training.append(refractive_indices.mean().detach().cpu().item())
+        self.mse_training.append(mse.mean().detach().cpu().item())
         
     def viz_training(self,seed): 
         plt.figure(figsize = (20, 5))

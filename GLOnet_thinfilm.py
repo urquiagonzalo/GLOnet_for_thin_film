@@ -157,7 +157,7 @@ class GLOnet():
         return (torch.randn(batch_size, self.noise_dim, requires_grad=True)).type(self.dtype)
    
     def global_mse_function(self, reflection):
-        return torch.mean(torch.pow(reflection - self.target_reflection, 2), dim=(1,2,3))
+        return torch.mean(torch.pow(reflection - self.target_reflection, 2)) #, dim=(1,2,3))
     """
     def global_loss_function(self, reflection):
         mse = self.global_mse_function(reflection)
@@ -183,7 +183,7 @@ class GLOnet():
     def viz_training(self,seed): 
         plt.figure(figsize = (20, 5))
         plt.subplot(131)
-        plt.plot(self.loss_training, color='orange')
+        plt.plot(self.loss_training)
         #plt.plot(self.mse_training , color='orange')  # GU: grafico MSE
         plt.ylabel('Loss', fontsize=18)
         plt.xlabel('Iterations', fontsize=18)

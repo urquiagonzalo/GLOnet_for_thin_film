@@ -171,7 +171,7 @@ class GLOnet():
         self.loss_training.append(loss.detach())
         self.thicknesses_training.append(thicknesses.mean().detach())
         self.refractive_indices_training.append(refractive_indices.mean().detach())
-        self.mse_training.append(mse.detach().numpy())                                    #GU: mse
+        self.mse_training.append(mse.detach())                                        #GU: mse
         
     def viz_training(self,seed): 
         #plt.figure(figsize = (20, 5))

@@ -57,7 +57,7 @@ class GLOnet():
         self.loss_training = []
         self.refractive_indices_training = []
         self.thicknesses_training = []
-        self.mse2 = []
+        self.mse_training = []                                       #GU: mse
         
         
     def train(self):
@@ -93,9 +93,10 @@ class GLOnet():
 
                 # construct the loss 
                 g_loss = self.global_loss_function(reflection)
-
+                g_mse  = self.global_mse_function(reflection)            #GU: mse
+                              
                 # record history
-                self.record_history(g_loss, thicknesses, refractive_indices)
+                self.record_history(g_loss, thicknesses, refractive_indices,g_mse)
                 
                 # train the generator
                 g_loss.backward()
@@ -154,6 +155,9 @@ class GLOnet():
         
     def sample_z(self, batch_size):
         return (torch.randn(batch_size, self.noise_dim, requires_grad=True)).type(self.dtype)
+
+    def global_mse_function(self, reflection):
+        return torch.mean(torch.pow(reflection - self.target_reflection, 2), dim=(1,2,3))
               
     def global_loss_function(self, reflection):
         return -torch.mean(torch.exp(-torch.mean(torch.pow(reflection - self.target_reflection, 2), dim=(1,2,3))/self.sigma))
@@ -163,10 +167,11 @@ class GLOnet():
         dmdt = torch.autograd.grad(metric.mean(), thicknesses, create_graph=True)
         return -torch.mean(torch.exp((-metric - self.robust_coeff *torch.mean(torch.abs(dmdt[0]), dim=1))/self.sigma))
 
-    def record_history(self, loss, thicknesses, refractive_indices):
+    def record_history(self, loss, thicknesses, refractive_indices,mse):              #GU: mse
         self.loss_training.append(loss.detach())
         self.thicknesses_training.append(thicknesses.mean().detach())
         self.refractive_indices_training.append(refractive_indices.mean().detach())
+        self.mse_training.append(mse.detach().numpy())                                    #GU: mse
         
     def viz_training(self,seed): 
         #plt.figure(figsize = (20, 5))
@@ -177,9 +182,12 @@ class GLOnet():
         #plt.xticks(fontsize=14)
         #plt.yticks(fontsize=14)
         from google.colab import files
-        with open(f"loss{seed}.txt", 'w') as f:
-            f.write(', '.join([f"{x:.4f}" for x in self.loss_training]) + '\n\n')
-            files.download(f"loss{seed}.txt")
+        #with open(f"loss{seed}.txt", 'w') as f:
+            #f.write(', '.join([f"{x:.4f}" for x in self.loss_training]) + '\n\n')
+            #files.download(f"loss{seed}.txt")
+        with open(f"mse{seed}.txt", 'w') as f:    
+            f.write(', '.join([f"{x:.4f}" for x in self.mse_training]) + '\n\n')
+            files.download(f"mse{seed}.txt")    
 
 
 

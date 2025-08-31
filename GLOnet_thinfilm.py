@@ -154,10 +154,7 @@ class GLOnet():
         
     def sample_z(self, batch_size):
         return (torch.randn(batch_size, self.noise_dim, requires_grad=True)).type(self.dtype)
-
-    def mse_function(self, reflection):                                                          #GU-mse
-        return torch.mean(torch.pow(reflection - self.target_reflection, 2))                     #GU-mse
-         
+              
     def global_loss_function(self, reflection):
         return -torch.mean(torch.exp(-torch.mean(torch.pow(reflection - self.target_reflection, 2), dim=(1,2,3))/self.sigma))
         
@@ -166,7 +163,7 @@ class GLOnet():
         dmdt = torch.autograd.grad(metric.mean(), thicknesses, create_graph=True)
         return -torch.mean(torch.exp((-metric - self.robust_coeff *torch.mean(torch.abs(dmdt[0]), dim=1))/self.sigma))
 
-    def record_history(self, loss, thicknesses, refractive_indices,mse_loss):
+    def record_history(self, loss, thicknesses, refractive_indices):
         self.loss_training.append(loss.detach())
         self.thicknesses_training.append(thicknesses.mean().detach())
         self.refractive_indices_training.append(refractive_indices.mean().detach())

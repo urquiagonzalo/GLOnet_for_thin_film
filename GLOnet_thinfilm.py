@@ -165,7 +165,7 @@ class GLOnet():
     """    
     
     def global_loss_function(self, reflection):
-        torch.mean(torch.pow(reflection - self.target_reflection, 2)
+        torch.mean(torch.pow(reflection - self.target_reflection, 2))
         with open("ver.txt", 'w') as f:   
             f.write(', '.join([f"{x:.4f}" for x in self.mse_training]) + '\n\n')
             files.download("ver.txt") 

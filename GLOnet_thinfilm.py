@@ -163,13 +163,7 @@ class GLOnet():
         mse = self.global_mse_function(reflection)
         return -torch.mean(torch.exp(-mse)/self.sigma)
     """    
-    
     def global_loss_function(self, reflection):
-        from google.colab import files
-        a=torch.mean(torch.pow(reflection - self.target_reflection, 2))
-        with open("ver.txt", 'w') as f:   
-            f.write(', '.join([f"{x:.4f}" for x in a]) + '\n\n')
-            files.download("ver.txt") 
         return -torch.mean(torch.exp(-torch.mean(torch.pow(reflection - self.target_reflection, 2), dim=(1,2,3))/self.sigma))
         
     def global_loss_function_robust(self, reflection, thicknesses):

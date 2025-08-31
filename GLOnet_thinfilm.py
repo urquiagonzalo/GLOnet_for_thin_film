@@ -100,7 +100,6 @@ class GLOnet():
                 
                 # train the generator
                 g_loss.backward()
-                g_mse.backward() 
                 self.optimizer.step()
                 self.scheduler.step()
                 

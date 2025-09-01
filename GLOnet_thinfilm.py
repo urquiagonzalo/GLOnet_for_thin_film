@@ -203,6 +203,10 @@ class GLOnet():
             f.write(', '.join([f"{x:.8f}" for x in self.mse_training]) + '\n\n')
             files.download(f"mse{seed}.txt") 
 
+#Cada línea de sexbatch(seed).txt corresponde a una iteración. Cada línea tiene el mse correspondiente a cada batch. Si tengo 150 de bacth habrá 150 números. 
+#El promedio de todas estos números se guarda en el archivo mse(seed).txt. Este archivo tiene 400 números. cada número es el promedio de cada iteración. 
+#Es decir, el promedio de la primera línea de msexbatch1.txt corresponde al primer número que aparece en mse1.txt 
+
 
 
 

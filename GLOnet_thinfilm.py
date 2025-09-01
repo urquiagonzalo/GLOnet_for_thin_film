@@ -58,6 +58,7 @@ class GLOnet():
         self.refractive_indices_training = []
         self.thicknesses_training = []
         self.mse_training = []                                       #GU: mse
+        self.batch_mse_training = []                                 #GU: mse batch
         
         
     def train(self):

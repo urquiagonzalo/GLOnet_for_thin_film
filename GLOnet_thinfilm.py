@@ -160,7 +160,7 @@ class GLOnet():
     def sample_z(self, batch_size):
         return (torch.randn(batch_size, self.noise_dim, requires_grad=True)).type(self.dtype)
    
-    def global_mse_function(self, reflection):                               #MSE GLOBAL
+    def global_mse_function(self, reflection):                               #MSE GLOBAL (promedio de todos los MSE de cada batch)
         return torch.mean(torch.pow(reflection - self.target_reflection, 2)) #, dim=(1,2,3)) SI PASO ESTO ME TIRA ERROR
         
     def batch_mse_function(self, reflection):                                #MSE DE CADA BATCH

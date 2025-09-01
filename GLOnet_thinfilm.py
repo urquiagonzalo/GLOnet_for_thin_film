@@ -195,11 +195,17 @@ class GLOnet():
         with open(f"loss{seed}.txt", 'w') as f:
             f.write(', '.join([f"{x:.8f}" for x in self.loss_training]) + '\n\n')
             files.download(f"loss{seed}.txt")
-        with open(f"mse{seed}.txt", 'w') as f:
+        with open(f"msexbatch{seed}.txt", 'w') as f:
+            for batch_mse in self.batch_mse_training:  # cada batch_mse es un np.array de tamaño batch_size
+                f.write(', '.join([f"{x:.8f}" for x in batch_mse]) + '\n')  # una línea por batch
+        files.download(f"msexbatch{seed}.txt") 
+
+        #with open(f"mse{seed}.txt", 'w') as f:   # Para guardar el MSE global
             #f.write(', '.join([f"{x:.8f}" for x in self.mse_training]) + '\n\n')
-            f.write(', '.join([f"{x:.8f}" for x in self.batch_mse_training]) + '\n\n')
-            files.download(f"mse{seed}.txt")    
-      
+            #files.download(f"mse{seed}.txt") 
+
+
+
 
 
 

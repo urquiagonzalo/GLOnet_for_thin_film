@@ -90,9 +90,9 @@ class GLOnet():
                 # calculate efficiencies and gradients using EM solver
                 #GU5/9: modificado para considerar refelexión (True en programa principal) o transmisión (False) 
                 if self.spectra:
-                    reflection = TMM_solver(thicknesses, refractive_indices, self.n_bot, self.n_top, self.k, self.theta, self.pol)
+                    reflection = TMM_solver(self, thicknesses, refractive_indices, self.n_bot, self.n_top, self.k, self.theta, self.pol)
                 else:    
-                    transmission = TMM_solver(thicknesses, refractive_indices, self.n_bot, self.n_top, self.k, self.theta, self.pol) #GU5/9: agrego transmisión
+                    transmission = TMM_solver(self, thicknesses, refractive_indices, self.n_bot, self.n_top, self.k, self.theta, self.pol) #GU5/9: agrego transmisión
                 # GU5/9: podrían ser las dos (VER)
                 # reflection, transmission = TMM_solver(thicknesses, refractive_indices, self.n_bot, self.n_top, self.k, self.theta, self.pol)
 
@@ -150,7 +150,7 @@ class GLOnet():
                 n_database = self.matdatabase.interp_wv(2 * math.pi/kvector, self.materials, True).unsqueeze(0).unsqueeze(0).type(self.dtype)
                 ref_idx = torch.sum(P.unsqueeze(-1) * n_database, dim=2)
 
-        reflection = TMM_solver(thicknesses, ref_idx, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
+        reflection = TMM_solver(self, thicknesses, ref_idx, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
         return (thicknesses, ref_idx, result_mat, reflection)
     
     def _TMM_solver(self, thicknesses, result_mat, kvector = None, inc_angles = None, pol = None):
@@ -167,10 +167,10 @@ class GLOnet():
         #return reflection
         #GU5/9: modificado para considerar refelexión (True en programa principal) o transmisión (False) 
         if self.spectra:
-            reflection = TMM_solver(thicknesses, ref_idx, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
+            reflection = TMM_solver(self, thicknesses, ref_idx, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
             return reflection
         else: 
-            transmission = TMM_solver(thicknesses, ref_idx, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
+            transmission = TMM_solver(self, thicknesses, ref_idx, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
             return transmission
         #return reflection, transmission 
     

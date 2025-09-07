@@ -36,6 +36,7 @@ class GLOnet():
         self.alpha_sup = params.alpha_sup
         self.iter0 = 0
         self.alpha = 0.1
+        self.spectra = params.spectra #GU5/9: permite considerar refelexión (True en programa principal) o transmisión (False) 
     
         # simulation parameters
         self.user_define = params.user_define
@@ -88,7 +89,6 @@ class GLOnet():
 
                 # calculate efficiencies and gradients using EM solver
                 #GU5/9: modificado para considerar refelexión (True en programa principal) o transmisión (False) 
-                self.spectra = params.spectra
                 if self.spectra:
                     reflection = TMM_solver(thicknesses, refractive_indices, self.n_bot, self.n_top, self.k, self.theta, self.pol)
                 else:    

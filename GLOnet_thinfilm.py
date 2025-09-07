@@ -87,16 +87,28 @@ class GLOnet():
                 thicknesses, refractive_indices, _ = self.generator(z, self.alpha)
 
                 # calculate efficiencies and gradients using EM solver
-                reflection = TMM_solver(thicknesses, refractive_indices, self.n_bot, self.n_top, self.k, self.theta, self.pol)
-               
+                #GU5/9: modificado para considerar refelexión (True en programa principal) o transmisión (False) 
+                self.spectra = params.spectra
+                if self.spectra:
+                    reflection = TMM_solver(thicknesses, refractive_indices, self.n_bot, self.n_top, self.k, self.theta, self.pol)
+                else:    
+                    transmission = TMM_solver(thicknesses, refractive_indices, self.n_bot, self.n_top, self.k, self.theta, self.pol) #GU5/9: agrego transmisión
+                # GU5/9: podrían ser las dos (VER)
+                # reflection, transmission = TMM_solver(thicknesses, refractive_indices, self.n_bot, self.n_top, self.k, self.theta, self.pol)
+
                 # free optimizer buffer 
                 self.optimizer.zero_grad()
 
                 # construct the loss 
-                g_loss = self.global_loss_function(reflection)
-                g_mse  = self.global_mse_function(reflection)            #GU: mse
-                mse_per_sample = self.batch_mse_function(reflection)     #GU: mse batch
-                
+                #GU5/9: modificado para considerar refelexión (True en programa principal) o transmisión (False) 
+                if self.spectra:
+                    g_loss = self.global_loss_function(reflection)
+                    g_mse  = self.global_mse_function(reflection)            #GU: mse
+                    mse_per_sample = self.batch_mse_function(reflection)     #GU: mse batch
+                else:
+                    g_loss = self.global_loss_function(transmission)
+                    g_mse  = self.global_mse_function(transmission)           #GU: mse
+                    mse_per_sample = self.batch_mse_function(transmission)    #GU: mse batch
                               
                 # record history
                 #self.record_history(g_loss, thicknesses, refractive_indices,g_mse)                  #GU: solo mse
@@ -151,9 +163,17 @@ class GLOnet():
         n_database = self.matdatabase.interp_wv(2 * math.pi/kvector, self.materials, True).unsqueeze(0).unsqueeze(0).type(self.dtype)
         one_hot = torch.eye(len(self.materials)).type(self.dtype)
         ref_idx = torch.sum(one_hot[result_mat].unsqueeze(-1) * n_database, dim=2)
-        reflection = TMM_solver(thicknesses, ref_idx, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
-        return reflection
-        
+        #reflection = TMM_solver(thicknesses, ref_idx, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
+        #return reflection
+        #GU5/9: modificado para considerar refelexión (True en programa principal) o transmisión (False) 
+        if self.spectra:
+            reflection = TMM_solver(thicknesses, ref_idx, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
+            return reflection
+        else: 
+            transmission = TMM_solver(thicknesses, ref_idx, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
+            return transmission
+        #return reflection, transmission 
+    
     def update_alpha(self, normIter):
         self.alpha = round(normIter/0.05) * self.alpha_sup + 1.
         

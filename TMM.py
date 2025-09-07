@@ -183,8 +183,27 @@ def TMM_solver(thicknesses, refractive_indices, n_bot, n_top, k, theta, pol = 'T
     # reflection 
     Reflection = torch.pow(complex_abs(S_stack[2]), 2) / torch.pow(complex_abs(S_stack[3]), 2)
     #GU5/9: modifiqué para considerar 
-    Transmission = torch.pow(torch.det(torch.abs(S_stack)), 2) / torch.pow(torch.abs(S_stack[:,:,:,:,0,0]), 2)
-    Transmission = Transmission.double()
+    #Transmission = torch.pow(torch.det(torch.abs(S_stack)), 2) / torch.pow(torch.abs(S_stack[:,:,:,:,0,0]), 2)
+    #Transmission = Transmission.double()
+
+    # Calcular cosenos de los ángulos en las interfaces
+    cos_theta_bot = torch.sqrt(1 - (ky / (k * n_bot))**2)
+    cos_theta_top = torch.sqrt(1 - (ky / (k * n_top))**2)
+
+    if pol == 'TM':
+        impedance_ratio = (n_top * cos_theta_top) / (n_bot * cos_theta_bot)
+    elif pol == 'TE':
+        impedance_ratio = (n_bot * cos_theta_bot) / (n_top * cos_theta_top)
+    else:
+        # En caso de 'both', concatenar ambas polarizaciones
+        imp_TM = (n_top * cos_theta_top) / (n_bot * cos_theta_bot)
+        imp_TE = (n_bot * cos_theta_bot) / (n_top * cos_theta_top)
+        impedance_ratio = torch.cat([imp_TM, imp_TE], dim=-1)
+
+    # Transmitancia
+    T22_abs2 = torch.pow(complex_abs(S_stack[3]), 2)
+    Transmission = (1.0 / T22_abs2) * torch.real(impedance_ratio)
+
     if self.spectra:        
         return Reflection
     else:     

@@ -149,8 +149,10 @@ class GLOnet():
             else:
                 n_database = self.matdatabase.interp_wv(2 * math.pi/kvector, self.materials, True).unsqueeze(0).unsqueeze(0).type(self.dtype)
                 ref_idx = torch.sum(P.unsqueeze(-1) * n_database, dim=2)
-
-        reflection = TMM_solver(self, thicknesses, ref_idx, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
+        if self.spectra:
+            reflection = TMM_solver(self, thicknesses, ref_idx, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
+        else:
+            transmission = TMM_solver(self, thicknesses, ref_idx, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
         return (thicknesses, ref_idx, result_mat, reflection)
     
     def _TMM_solver(self, thicknesses, result_mat, kvector = None, inc_angles = None, pol = None):

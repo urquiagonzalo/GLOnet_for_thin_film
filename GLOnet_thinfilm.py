@@ -149,6 +149,7 @@ class GLOnet():
             else:
                 n_database = self.matdatabase.interp_wv(2 * math.pi/kvector, self.materials, True).unsqueeze(0).unsqueeze(0).type(self.dtype)
                 ref_idx = torch.sum(P.unsqueeze(-1) * n_database, dim=2)
+        #GU5/9: modificado para considerar refelexión (True en programa principal) o transmisión (False) 
         if self.spectra:
             reflection = TMM_solver(self, thicknesses, ref_idx, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
         else:

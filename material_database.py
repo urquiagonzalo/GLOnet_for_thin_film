@@ -7,11 +7,12 @@ class MatDatabase(object):
 		Parameters: 
 			material_key: list of material names
 	"""
-	def __init__(self, material_key):
+	def __init__(self, material_key, database_folder): #GU8/9: modificado para considerar distintas carpetas desde el código principal. 
 		super(MatDatabase, self).__init__()
 		self.material_key = material_key
 		self.num_materials = len(material_key)
-		self.mat_database = self.build_database()
+		self.mat_database = self.build_database() #GU8/9: agregado para considerar distintas carpetas desde el código principal. 
+		self.database_folder = database_folder
 
 	def build_database(self):
 		mat_database = {}

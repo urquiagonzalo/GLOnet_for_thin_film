@@ -11,8 +11,8 @@ class MatDatabase(object):
 		super(MatDatabase, self).__init__()
 		self.material_key = material_key
 		self.num_materials = len(material_key)
-		self.mat_database = self.build_database() #GU8/9: agregado para considerar distintas carpetas desde el código principal. 
 		self.database_folder = database_folder
+		self.mat_database = self.build_database() #GU8/9: agregado para considerar distintas carpetas desde el código principal. 
 
 	def build_database(self):
 		mat_database = {}

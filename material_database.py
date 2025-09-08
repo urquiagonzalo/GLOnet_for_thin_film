@@ -18,8 +18,9 @@ class MatDatabase(object):
 		
 		#%% Read in the dispersion data of each material
 		for i in range(self.num_materials):
-			file_name = './material_database/mat_' + self.material_key[i] + '.xlsx'
-			#file_name = './porosidad_database/mat_' + self.material_key[i] + '.xlsx' # carpeta con materiales porosos
+			#GU8/9: modificado para considerar distintas carpetas desde el código principal. 
+			#GU8/9: en el programa principal agregué params.database_folder = '...' 
+			file_name = f'./{self.database_folder}/mat_{self.material_key[i]}.xlsx'
 			
 			try: 
 				A = np.array(pd.read_excel(file_name))

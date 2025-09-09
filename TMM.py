@@ -184,10 +184,8 @@ def TMM_solver(self, thicknesses, refractive_indices, n_bot, n_top, k, theta, po
     
     # reflection 
     Reflection = torch.pow(complex_abs(S_stack[2]), 2) / torch.pow(complex_abs(S_stack[3]), 2)
-    #GU5/9: modifiqué para considerar transmisión
-    #Transmission = torch.pow(torch.det(torch.abs(S_stack)), 2) / torch.pow(torch.abs(S_stack[:,:,:,:,0,0]), 2)
-    #Transmission = Transmission.double()
-
+    
+    #GU5/9: agregué para considerar transmisión
     # Calcular cosenos de los ángulos en las interfaces
     cos_theta_bot = torch.sqrt(1 - (ky / (k * n_bot))**2)
     cos_theta_top = torch.sqrt(1 - (ky / (k * n_top))**2)

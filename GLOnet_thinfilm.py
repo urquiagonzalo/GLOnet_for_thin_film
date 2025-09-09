@@ -185,26 +185,14 @@ class GLOnet():
         return (torch.randn(batch_size, self.noise_dim, requires_grad=True)).type(self.dtype)
    
     def global_mse_function(self, reflection):                               #MSE GLOBAL (promedio de todos los MSE de cada batch)
-        #GU9/9: modificado para considerar transmisión y reflección en el entrenamiento
-        if self.spectra:
-            return torch.mean(torch.pow(reflection - self.target_reflection, 2)) 
-        else:    
-            return torch.mean(torch.pow(transmission  - self.target_reflection, 2))
+        return torch.mean(torch.pow(reflection - self.target_reflection, 2)) 
         
     def batch_mse_function(self, reflection):                                #MSE DE CADA BATCH
-        #GU9/9: modificado para considerar transmisión y reflección en el entrenamiento
-        if self.spectra:
-            return torch.mean(torch.pow(reflection - self.target_reflection, 2), dim=(1,2,3))
-        else:     
-            return torch.mean(torch.pow(transmission - self.target_reflection, 2), dim=(1,2,3))
-
+        return torch.mean(torch.pow(reflection - self.target_reflection, 2), dim=(1,2,3))
+        
     def global_loss_function(self, reflection):
-        #GU9/9: modificado para considerar transmisión y reflección en el entrenamiento
-        if self.spectra:
-            return -torch.mean(torch.exp(-torch.mean(torch.pow(reflection - self.target_reflection, 2), dim=(1,2,3))/self.sigma))
-        else:      
-            return -torch.mean(torch.exp(-torch.mean(torch.pow(transmission - self.target_reflection, 2), dim=(1,2,3))/self.sigma))
-
+        return -torch.mean(torch.exp(-torch.mean(torch.pow(reflection - self.target_reflection, 2), dim=(1,2,3))/self.sigma))
+        
     def global_loss_function_robust(self, reflection, thicknesses):
         metric = torch.mean(torch.pow(reflection - self.target_reflection, 2), dim=(1,2,3))
         dmdt = torch.autograd.grad(metric.mean(), thicknesses, create_graph=True)

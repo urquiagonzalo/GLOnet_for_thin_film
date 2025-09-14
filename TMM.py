@@ -185,12 +185,11 @@ def TMM_solver(self, thicknesses, refractive_indices, n_bot, n_top, k, theta, po
     # reflection 
     Reflection = torch.pow(complex_abs(S_stack[2]), 2) / torch.pow(complex_abs(S_stack[3]), 2)
     
-    #GU5/9: agregué para considerar transmisión
-
     # Calcular cosenos de los ángulos en las interfaces
     cos_theta_bot = torch.sqrt(1 - (ky / (k * n_bot))**2)
     cos_theta_top = torch.sqrt(1 - (ky / (k * n_top))**2)
 
+    # Impedancia óptica
     if pol == 'TM':
         impedance_ratio = (n_top * cos_theta_top) / (n_bot * cos_theta_bot)
     elif pol == 'TE':
@@ -200,11 +199,10 @@ def TMM_solver(self, thicknesses, refractive_indices, n_bot, n_top, k, theta, po
         imp_TE = (n_bot * cos_theta_bot) / (n_top * cos_theta_top)
         impedance_ratio = torch.cat([imp_TM, imp_TE], dim=-1)
 
-    # Transmitancia corregida (usar S_stack[0] para coeficiente de transmisión)
-    t_amp = S_stack[0]  # Coeficiente de transmisión en amplitud
-    t_abs2 = torch.pow(complex_abs(t_amp), 2)
-
-    Transmission = t_abs2 * torch.clamp(torch.real(impedance_ratio), min=0.0)
+    # Transmitancia usando |1 / M22|^2 * Re(impedance ratio)
+    M22 = S_stack[3]
+    T22_abs2 = torch.pow(complex_abs(M22), 2)
+    Transmission = (1.0 / T22_abs2) * torch.clamp(torch.real(impedance_ratio), min=0.0)
 
 
     """

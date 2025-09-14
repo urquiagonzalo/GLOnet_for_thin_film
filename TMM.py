@@ -187,29 +187,33 @@ def TMM_solver(self, thicknesses, refractive_indices, n_bot, n_top, k, theta, po
     
     #GU5/9: agregué para considerar transmisión
 
+    # --- Calcular cosenos complejos de los ángulos ---
     cos_theta_bot = torch.sqrt(1 - (ky / (k * n_bot + 0j))**2)
     cos_theta_top = torch.sqrt(1 - (ky / (k * n_top + 0j))**2)
     
-    # Calcular la parte real del cociente de impedancia, que representa flujo de potencia
+    # --- Calcular el factor de impedancia para potencia transmitida ---
     if pol == 'TM':
-        numerator = torch.real(n_top * cos_theta_top)
-        denominator = torch.real(n_bot * cos_theta_bot)
+        # Para TM: T = |1/S22|^2 * Re(n_top * cos_theta_top) / Re(n_bot * cos_theta_bot)
+        numerator = (n_top * cos_theta_top)
+        denominator = (n_bot * cos_theta_bot)
     elif pol == 'TE':
-        numerator = torch.real(n_bot * cos_theta_bot)
-        denominator = torch.real(n_top * cos_theta_top)
-    else:
-        numerator_TM = torch.real(n_top * cos_theta_top)
-        denominator_TM = torch.real(n_bot * cos_theta_bot)
-        numerator_TE = torch.real(n_bot * cos_theta_bot)
-        denominator_TE = torch.real(n_top * cos_theta_top)
+        # Para TE: T = |1/S22|^2 * Re(n_bot * cos_theta_bot) / Re(n_top * cos_theta_top)
+        numerator = (n_bot * cos_theta_bot)
+        denominator = (n_top * cos_theta_top)
+    else:  # both
+        numerator_TM = (n_top * cos_theta_top)
+        denominator_TM = (n_bot * cos_theta_bot)
+        numerator_TE = (n_bot * cos_theta_bot)
+        denominator_TE = (n_top * cos_theta_top)
         numerator = torch.cat([numerator_TM, numerator_TE], dim=-1)
         denominator = torch.cat([denominator_TM, denominator_TE], dim=-1)
     
-    impedance_ratio = numerator / (denominator + 1e-12)  # para evitar división por 0
+    # --- Calcular |1/S22|^2 ---
+    T22_abs2 = complex_abs(S_stack[3])**2
     
-    # Transmitancia física
-    T22_abs2 = torch.pow(complex_abs(S_stack[3]), 2)
-    Transmission = impedance_ratio / (T22_abs2 + 1e-12)
+    # --- Calcular Transmitancia ---
+    impedance_ratio = numerator / (denominator + 1e-20)  # evitar división por cero
+    Transmission = (1.0 / (T22_abs2 + 1e-20)) * torch.real(impedance_ratio)
 
     """
     # Calcular cosenos de los ángulos en las interfaces

@@ -213,21 +213,32 @@ def TMM_solver(self, thicknesses, refractive_indices, n_bot, n_top, k, theta, po
     T22_abs2 = torch.pow(complex_abs(S_stack[3]), 2)
     Transmission = (1.0 / T22_abs2) * torch.real(impedance_ratio)
     """
-    # Calcular cosenos de los ángulos en las interfaces
+
+    # Calcular cosenos de los ángulos en los extremos
     cos_theta_bot = torch.sqrt(1 - (ky / (k * n_bot))**2)
     cos_theta_top = torch.sqrt(1 - (ky / (k * n_top))**2)
 
-    if pol == 'TM':
-        power_ratio = torch.real((n_top * cos_theta_top) / (n_bot * cos_theta_bot))
-    elif pol == 'TE':
-        power_ratio = torch.real((n_bot * cos_theta_bot) / (n_top * cos_theta_top))
+    # Definir impedancias ópticas en cada medio
+    if pol == 'TE':
+        Z_in = 1 / (n_bot * cos_theta_bot)
+        Z_out = 1 / (n_top * cos_theta_top)
+    elif pol == 'TM':
+        Z_in = cos_theta_bot / n_bot
+        Z_out = cos_theta_top / n_top
     else:
-        power_ratio_TM = torch.real((n_top * cos_theta_top) / (n_bot * cos_theta_bot))
-        power_ratio_TE = torch.real((n_bot * cos_theta_bot) / (n_top * cos_theta_top))
-        power_ratio = torch.cat([power_ratio_TM, power_ratio_TE], dim=-1)
+        Z_in_TE = 1 / (n_bot * cos_theta_bot)
+        Z_out_TE = 1 / (n_top * cos_theta_top)
+        Z_in_TM = cos_theta_bot / n_bot
+        Z_out_TM = cos_theta_top / n_top
+        Z_in = torch.cat([Z_in_TM, Z_in_TE], dim=-1)
+        Z_out = torch.cat([Z_out_TM, Z_out_TE], dim=-1)
 
-    T22_abs2 = torch.pow(complex_abs(S_stack[3]), 2)
-    Transmission = (1.0 / T22_abs2) * power_ratio
+    # Calcular |S22|²
+    S22_abs2 = torch.pow(complex_abs(S_stack[3]), 2)
+
+    # Transmitancia = 1 / |S22|² * Re(Z_out / Z_in)
+    impedance_ratio = torch.real(Z_out / Z_in)
+    Transmission = (1.0 / S22_abs2) * impedance_ratio
 
 
     if self.spectra:        

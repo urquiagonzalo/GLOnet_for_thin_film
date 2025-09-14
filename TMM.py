@@ -186,7 +186,13 @@ def TMM_solver(self, thicknesses, refractive_indices, n_bot, n_top, k, theta, po
     Reflection = torch.pow(complex_abs(S_stack[2]), 2) / torch.pow(complex_abs(S_stack[3]), 2)
 
     # Transmission: |S12|² / |S22|² GU14/9:
-    Transmission = torch.pow(complex_abs(S_stack[1]), 2) / torch.pow(complex_abs(S_stack[3]), 2)
+    # Funciona solo si n_bot = n_top = 1 (i.e., medio libre a ambos lados).
+    # Transmission = torch.pow(complex_abs(S_stack[1]), 2) / torch.pow(complex_abs(S_stack[3]), 2)
+
+    kx_top = torch.sqrt((k * n_top)**2 - ky**2)
+    kx_bot = torch.sqrt((k * n_bot)**2 - ky**2)
+    correction_factor = torch.real(n_top * kx_top) / torch.real(n_bot * kx_bot)
+    Transmission = correction_factor * (torch.pow(complex_abs(S_stack[1]), 2) / torch.pow(complex_abs(S_stack[3]), 2))
 
     """
     #GU5/9: modifiqué para considerar 

@@ -187,33 +187,25 @@ def TMM_solver(self, thicknesses, refractive_indices, n_bot, n_top, k, theta, po
     
     #GU5/9: agregué para considerar transmisión
 
-    # --- Calcular cosenos complejos de los ángulos ---
-    cos_theta_bot = torch.sqrt(1 - (ky / (k * n_bot + 0j))**2)
-    cos_theta_top = torch.sqrt(1 - (ky / (k * n_top + 0j))**2)
-    
-    # --- Calcular el factor de impedancia para potencia transmitida ---
+    # Calcular cosenos de los ángulos en las interfaces
+    cos_theta_bot = torch.sqrt(1 - (ky / (k * n_bot))**2)
+    cos_theta_top = torch.sqrt(1 - (ky / (k * n_top))**2)
+
     if pol == 'TM':
-        # Para TM: T = |1/S22|^2 * Re(n_top * cos_theta_top) / Re(n_bot * cos_theta_bot)
-        numerator = (n_top * cos_theta_top)
-        denominator = (n_bot * cos_theta_bot)
+        impedance_ratio = (n_top * cos_theta_top) / (n_bot * cos_theta_bot)
     elif pol == 'TE':
-        # Para TE: T = |1/S22|^2 * Re(n_bot * cos_theta_bot) / Re(n_top * cos_theta_top)
-        numerator = (n_bot * cos_theta_bot)
-        denominator = (n_top * cos_theta_top)
-    else:  # both
-        numerator_TM = (n_top * cos_theta_top)
-        denominator_TM = (n_bot * cos_theta_bot)
-        numerator_TE = (n_bot * cos_theta_bot)
-        denominator_TE = (n_top * cos_theta_top)
-        numerator = torch.cat([numerator_TM, numerator_TE], dim=-1)
-        denominator = torch.cat([denominator_TM, denominator_TE], dim=-1)
-    
-    # --- Calcular |1/S22|^2 ---
-    T22_abs2 = complex_abs(S_stack[3])**2
-    
-    # --- Calcular Transmitancia ---
-    impedance_ratio = numerator / (denominator + 1e-20)  # evitar división por cero
-    Transmission = (1.0 / (T22_abs2 + 1e-20)) * torch.real(impedance_ratio)
+        impedance_ratio = (n_bot * cos_theta_bot) / (n_top * cos_theta_top)
+    else:
+        imp_TM = (n_top * cos_theta_top) / (n_bot * cos_theta_bot)
+        imp_TE = (n_bot * cos_theta_bot) / (n_top * cos_theta_top)
+        impedance_ratio = torch.cat([imp_TM, imp_TE], dim=-1)
+
+    # Transmitancia corregida (usar S_stack[0] para coeficiente de transmisión)
+    t_amp = S_stack[0]  # Coeficiente de transmisión en amplitud
+    t_abs2 = torch.pow(complex_abs(t_amp), 2)
+
+    Transmission = t_abs2 * torch.clamp(torch.real(impedance_ratio), min=0.0)
+
 
     """
     # Calcular cosenos de los ángulos en las interfaces

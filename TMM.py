@@ -182,10 +182,13 @@ def TMM_solver(self, thicknesses, refractive_indices, n_bot, n_top, k, theta, po
     # S matrix
     S_stack = matrix_mul(matrix_inv(A2F_top), matrix_mul(T_stack, A2F_bot))
     
-    # reflection 
+    # reflection : |S21|² / |S22|²
     Reflection = torch.pow(complex_abs(S_stack[2]), 2) / torch.pow(complex_abs(S_stack[3]), 2)
-    
 
+    # Transmission: |S12|² / |S22|² GU14/9:
+    Transmission = torch.pow(complex_abs(S_stack[1]), 2) / torch.pow(complex_abs(S_stack[3]), 2)
+
+    """
     #GU5/9: modifiqué para considerar 
     #GU5/9: modifiqué para considerar transmisión
     # Calcular cosenos de los ángulos en las interfaces
@@ -205,6 +208,7 @@ def TMM_solver(self, thicknesses, refractive_indices, n_bot, n_top, k, theta, po
     # Transmitancia
     T22_abs2 = torch.pow(complex_abs(S_stack[3]), 2)
     Transmission = (1.0 / T22_abs2) * torch.real(impedance_ratio)
+    """
 
     if self.spectra:        
         return Reflection

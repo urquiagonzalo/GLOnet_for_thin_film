@@ -213,26 +213,21 @@ def TMM_solver(self, thicknesses, refractive_indices, n_bot, n_top, k, theta, po
     T22_abs2 = torch.pow(complex_abs(S_stack[3]), 2)
     Transmission = (1.0 / T22_abs2) * torch.real(impedance_ratio)
     """
-      # Calcular cosenos de los ángulos en las interfaces
+    # Calcular cosenos de los ángulos en las interfaces
     cos_theta_bot = torch.sqrt(1 - (ky / (k * n_bot))**2)
     cos_theta_top = torch.sqrt(1 - (ky / (k * n_top))**2)
 
-    # Calculamos el factor de corrección para la intensidad transmitida según la polarización
     if pol == 'TM':
-        factor = torch.real((n_top * cos_theta_top) / (n_bot * cos_theta_bot))
+        power_ratio = torch.real((n_top * cos_theta_top) / (n_bot * cos_theta_bot))
     elif pol == 'TE':
-        factor = torch.real((n_bot * cos_theta_top) / (n_top * cos_theta_bot))
+        power_ratio = torch.real((n_bot * cos_theta_bot) / (n_top * cos_theta_top))
     else:
-        # En caso de 'both', concatenamos ambos factores de corrección
-        factor_TM = torch.real((n_top * cos_theta_top) / (n_bot * cos_theta_bot))
-        factor_TE = torch.real((n_bot * cos_theta_top) / (n_top * cos_theta_bot))
-        factor = torch.cat([factor_TM, factor_TE], dim=-1)
+        power_ratio_TM = torch.real((n_top * cos_theta_top) / (n_bot * cos_theta_bot))
+        power_ratio_TE = torch.real((n_bot * cos_theta_bot) / (n_top * cos_theta_top))
+        power_ratio = torch.cat([power_ratio_TM, power_ratio_TE], dim=-1)
 
-    # Módulo cuadrado de S22 (coeficiente de transmisión)
     T22_abs2 = torch.pow(complex_abs(S_stack[3]), 2)
-
-    # Transmitancia en intensidad
-    Transmission = (1.0 / T22_abs2) * factor
+    Transmission = (1.0 / T22_abs2) * power_ratio
 
 
     if self.spectra:        

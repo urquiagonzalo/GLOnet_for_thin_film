@@ -184,35 +184,8 @@ def TMM_solver(self, thicknesses, refractive_indices, n_bot, n_top, k, theta, po
     
     # reflection : |S21|² / |S22|²
     Reflection = torch.pow(complex_abs(S_stack[2]), 2) / torch.pow(complex_abs(S_stack[3]), 2)
-    """
-    # Transmission: |S12|² / |S22|² GU14/9:
-    kx_top = torch.sqrt((k * n_top)**2 - ky**2)
-    kx_bot = torch.sqrt((k * n_bot)**2 - ky**2)
-    correction_factor = torch.real(n_top * kx_top) / torch.real(n_bot * kx_bot)
-    Transmission = correction_factor * (torch.pow(complex_abs(S_stack[1]), 2) / torch.pow(complex_abs(S_stack[3]), 2))
 
-    """
-    #GU5/9: modifiqué para considerar 
-    #GU5/9: modifiqué para considerar transmisión
-    """
-    # Calcular cosenos de los ángulos en las interfaces
-    cos_theta_bot = torch.sqrt(1 - (ky / (k * n_bot))**2)
-    cos_theta_top = torch.sqrt(1 - (ky / (k * n_top))**2)
-
-    if pol == 'TM':
-        impedance_ratio = (n_top * cos_theta_top) / (n_bot * cos_theta_bot)
-    elif pol == 'TE':
-        impedance_ratio = (n_bot * cos_theta_bot) / (n_top * cos_theta_top)
-    else:
-        # En caso de 'both', concatenar ambas polarizaciones
-        imp_TM = (n_top * cos_theta_top) / (n_bot * cos_theta_bot)
-        imp_TE = (n_bot * cos_theta_bot) / (n_top * cos_theta_top)
-        impedance_ratio = torch.cat([imp_TM, imp_TE], dim=-1)
-
-    # Transmitancia
-    T22_abs2 = torch.pow(complex_abs(S_stack[3]), 2)
-    Transmission = (1.0 / T22_abs2) * torch.real(impedance_ratio)
-    """
+    #GU16/9: modifiqué para considerar transmisión (considerando superestrato y sustrato distintos)
 
     # Calcular cosenos de los ángulos en los extremos
     cos_theta_bot = torch.sqrt(1 - (ky / (k * n_bot))**2)

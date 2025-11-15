@@ -87,6 +87,35 @@ class GLOnet():
                 # generate a batch of iamges
                 thicknesses, refractive_indices, _ = self.generator(z, self.alpha)
 
+                # ---------------------------------------------------------
+                # AGREGADO PARA GUARDAR ESTRUCTURAS EN LA ÚLTIMA ITERACIÓN
+                # --------------------------------------------------------
+                if it == self.numIter:   # última iteración
+                    # guardar espesores
+                    thicknesses_last = thicknesses.detach().cpu().numpy()
+                    np.savetxt(f"thicknesses_last_iter_{self.numIter}.txt",
+                               thicknesses_last*1000, fmt="%.6f")
+                
+                    # guardar índices de refracción
+                    refidx_last = refractive_indices.detach().cpu().numpy()
+                    np.savetxt(f"refidx_last_iter_{self.numIter}.txt",
+                               refidx_last, fmt="%.6f")
+                
+                    # guardar los materiales (si los querés)
+                    # necesitan pasar por softmax/argmax P, así como en evaluate()
+                    P = _  # tercera salida del generador
+                    result_mat = torch.argmax(P, dim=2).detach().cpu().numpy()
+                    np.savetxt(f"materials_last_iter_{self.numIter}.txt",
+                               result_mat, fmt="%d")
+                
+                    # si estás en Colab:
+                    from google.colab import files
+                    files.download(f"thicknesses_last_iter_{self.numIter}.txt")
+                    files.download(f"refidx_last_iter_{self.numIter}.txt")
+                    files.download(f"materials_last_iter_{self.numIter}.txt")
+                 # -----------------------------------------------
+                 # -----------------------------------------------
+
                 # calculate efficiencies and gradients using EM solver
                 #GU5/9: modificado para considerar refelexión (True en programa principal) o transmisión (False) 
                 if self.spectra:
@@ -131,7 +160,7 @@ class GLOnet():
             pol = self.pol            
 
         self.generator.eval()
-        z = self.sample_z(num_devices)
+        z = self.sample_z(num_devices) # Llama al creador de números aleatorios
         thicknesses, refractive_indices, P = self.generator(z, self.alpha)
         result_mat = torch.argmax(P, dim=2).detach() # batch size x number of layer
 
@@ -180,7 +209,9 @@ class GLOnet():
     
     def update_alpha(self, normIter):
         self.alpha = round(normIter/0.05) * self.alpha_sup + 1.
-        
+
+    # crea un tensor con la forma indicada, donde cada elemento es un número aleatorio tomado de una distribución normal estándar (media = 0, desviación estándar = 1).
+    # Es decir, los números no son uniformes ni enteros; son valores continuos centrados en 0.
     def sample_z(self, batch_size):
         return (torch.randn(batch_size, self.noise_dim, requires_grad=True)).type(self.dtype)
    

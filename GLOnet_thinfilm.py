@@ -97,9 +97,9 @@ class GLOnet():
                                thicknesses_last*1000, fmt="%.6f")
 
                     # guardar índices de refracción
-                    #refidx_last = refractive_indices.detach().cpu().numpy()
-                    #np.savetxt(f"refidx_last_iter_{self.numIter}.txt",
-                    #           refidx_last, fmt="%.6f")
+                    refidx_last = refractive_indices.detach().cpu().numpy()
+                    np.savetxt(f"refidx_last_iter_{self.numIter}.txt",
+                               refidx_last, fmt="%.6f")
 
                     # guardar los materiales (si los querés)
                     # necesitan pasar por softmax/argmax P, así como en evaluate()
@@ -118,7 +118,7 @@ class GLOnet():
                     # si estás en Colab:
                     from google.colab import files
                     files.download(f"thicknesses_last_iter_{self.numIter}.txt")
-                    #files.download(f"refidx_last_iter_{self.numIter}.txt")
+                    files.download(f"refidx_last_iter_{self.numIter}.txt")
                     #files.download(f"materials_last_iter_{self.numIter}.txt")
                     #files.download(f"msexbatch_last_iter_{self.numIter}.txt")
                  # -----------------------------------------------

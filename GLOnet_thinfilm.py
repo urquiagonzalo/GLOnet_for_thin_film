@@ -107,12 +107,20 @@ class GLOnet():
                     result_mat = torch.argmax(P, dim=2).detach().cpu().numpy()
                     np.savetxt(f"materials_last_iter_{self.numIter}.txt",
                                result_mat, fmt="%d")
+
+                    # =================================================================== #
+                    # GUARDAR SOLO EL MSE DEL ÚLTIMO CONJUNTO DE BATCH - ULTIMA ITERACIÓN #
+                    # =================================================================== #
+                    last_batch_mse = mse_per_sample.detach().cpu().numpy()
+                    np.savetxt(f"msexbatch_last_iter_{self.numIter}.txt",
+                               last_batch_mse, fmt="%.8f")
                 
                     # si estás en Colab:
                     from google.colab import files
                     files.download(f"thicknesses_last_iter_{self.numIter}.txt")
                     files.download(f"refidx_last_iter_{self.numIter}.txt")
                     files.download(f"materials_last_iter_{self.numIter}.txt")
+                    files.download(f"msexbatch_last_iter_{self.numIter}.txt")
                  # -----------------------------------------------
                  # -----------------------------------------------
 

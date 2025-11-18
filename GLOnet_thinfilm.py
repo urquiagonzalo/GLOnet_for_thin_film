@@ -103,10 +103,10 @@ class GLOnet():
                 
                     # guardar los materiales (si los querés)
                     # necesitan pasar por softmax/argmax P, así como en evaluate()
-                    P = _  # tercera salida del generador
-                    result_mat = torch.argmax(P, dim=2).detach().cpu().numpy()
-                    np.savetxt(f"materials_last_iter_{self.numIter}.txt",
-                               result_mat, fmt="%d")
+                    #P = _  # tercera salida del generador
+                    #result_mat = torch.argmax(P, dim=2).detach().cpu().numpy()
+                    #np.savetxt(f"materials_last_iter_{self.numIter}.txt",
+                    #           result_mat, fmt="%d")
 
                     # =================================================================== #
                     # GUARDAR SOLO EL MSE DEL ÚLTIMO CONJUNTO DE BATCH - ULTIMA ITERACIÓN #
@@ -119,7 +119,7 @@ class GLOnet():
                     from google.colab import files
                     files.download(f"thicknesses_last_iter_{self.numIter}.txt")
                     files.download(f"refidx_last_iter_{self.numIter}.txt")
-                    files.download(f"materials_last_iter_{self.numIter}.txt")
+                    #files.download(f"materials_last_iter_{self.numIter}.txt")
                     files.download(f"msexbatch_last_iter_{self.numIter}.txt")
                  # -----------------------------------------------
                  # -----------------------------------------------

@@ -86,10 +86,11 @@ class GLOnet():
 
                 # generate a batch of iamges
                 thicknesses, refractive_indices, _ = self.generator(z, self.alpha)
-
+                
                 # ---------------------------------------------------------
                 # AGREGADO PARA GUARDAR ESTRUCTURAS EN LA ÚLTIMA ITERACIÓN
                 # --------------------------------------------------------
+                result_mate = torch.argmax(P, dim=2)  # batch x num_layers
                 if it == self.numIter:   # última iteración
                     # guardar espesores
                     thicknesses_last = thicknesses.detach().cpu().numpy()
@@ -104,7 +105,7 @@ class GLOnet():
 
                     # 3️⃣ Guardar nombres de materiales por capa
                     # result_mat: tamaño batch x num_layers
-                    result_mat_np = result_mat.detach().cpu().numpy()
+                    result_mat_np = result_mate.detach().cpu().numpy()
                     with open(f"materials_last_iter_{self.numIter}.txt", 'w') as f:
                         for row in result_mat_np:  # una fila = un diseño / batch
                             f.write(','.join([params.materials[i] for i in row]) + '\n')

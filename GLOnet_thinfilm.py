@@ -90,11 +90,11 @@ class GLOnet():
                 # ---------------------------------------------------------
                 # AGREGADO PARA GUARDAR ESTRUCTURAS EN LA ÚLTIMA ITERACIÓN
                 # --------------------------------------------------------
-                #if it == self.numIter:   # última iteración
+                if it == self.numIter:   # última iteración
                     # guardar espesores
-                    #thicknesses_last = thicknesses.detach().cpu().numpy()
-                    #np.savetxt(f"thicknesses_last_iter_{self.numIter}.txt",
-                    #           thicknesses_last*1000, fmt="%.6f")
+                    thicknesses_last = thicknesses.detach().cpu().numpy()
+                    np.savetxt(f"thicknesses_last_iter_{self.numIter}.txt",
+                               thicknesses_last*1000, fmt="%.6f")
 
                     # guardar índices de refracción
                     #refidx_last = refractive_indices.detach().cpu().numpy()
@@ -116,8 +116,8 @@ class GLOnet():
                     #           last_batch_mse, fmt="%.8f")
                    
                     # si estás en Colab:
-                    #from google.colab import files
-                    #files.download(f"thicknesses_last_iter_{self.numIter}.txt")
+                    from google.colab import files
+                    files.download(f"thicknesses_last_iter_{self.numIter}.txt")
                     #files.download(f"refidx_last_iter_{self.numIter}.txt")
                     #files.download(f"materials_last_iter_{self.numIter}.txt")
                     #files.download(f"msexbatch_last_iter_{self.numIter}.txt")

@@ -111,16 +111,16 @@ class GLOnet():
                     # =================================================================== #
                     # GUARDAR SOLO EL MSE DEL ÚLTIMO CONJUNTO DE BATCH - ULTIMA ITERACIÓN #
                     # =================================================================== #
-                    last_batch_mse = mse_per_sample.detach().cpu().numpy()
-                    np.savetxt(f"msexbatch_last_iter_{self.numIter}.txt",
-                               last_batch_mse, fmt="%.8f")
+                    #last_batch_mse = mse_per_sample.detach().cpu().numpy()
+                    #np.savetxt(f"msexbatch_last_iter_{self.numIter}.txt",
+                    #           last_batch_mse, fmt="%.8f")
                    
                     # si estás en Colab:
                     from google.colab import files
                     files.download(f"thicknesses_last_iter_{self.numIter}.txt")
                     files.download(f"refidx_last_iter_{self.numIter}.txt")
                     #files.download(f"materials_last_iter_{self.numIter}.txt")
-                    files.download(f"msexbatch_last_iter_{self.numIter}.txt")
+                    #files.download(f"msexbatch_last_iter_{self.numIter}.txt")
                  # -----------------------------------------------
                  # -----------------------------------------------
 

@@ -90,7 +90,7 @@ class GLOnet():
                 # ---------------------------------------------------------
                 # AGREGADO PARA GUARDAR ESTRUCTURAS EN LA ÚLTIMA ITERACIÓN
                 # --------------------------------------------------------
-                result_mate = torch.argmax(P, dim=2)  # batch x num_layers
+           
                 if it == self.numIter:   # última iteración
                     # guardar espesores
                     thicknesses_last = thicknesses.detach().cpu().numpy()
@@ -103,11 +103,14 @@ class GLOnet():
                     refidx_flat = refidx_last.reshape(-1, refidx_last.shape[2])
                     np.savetxt(f"refidx_last_iter_{self.numIter}.txt", refidx_flat, fmt="%.6f")
 
+
                     # 3️⃣ Guardar nombres de materiales por capa
-                    # result_mat: tamaño batch x num_layers
-                    result_mat_np = result_mate.detach().cpu().numpy()
+                    # Convertimos P (probabilidades) a índices de materiales
+                    result_mat = torch.argmax(P, dim=2)  # batch x num_layers
+                    result_mat_np = result_mat.detach().cpu().numpy()
+                    
                     with open(f"materials_last_iter_{self.numIter}.txt", 'w') as f:
-                        for row in result_mat_np:  # una fila = un diseño / batch
+                        for row in result_mat_np:  # cada fila = un diseño
                             f.write(','.join([params.materials[i] for i in row]) + '\n')
                     
                     # =================================================================== #

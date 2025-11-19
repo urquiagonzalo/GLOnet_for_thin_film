@@ -92,26 +92,26 @@ class GLOnet():
                 # --------------------------------------------------------
            
                 if it == self.numIter:   # última iteración
-                    # guardar espesores
+                    # 1️⃣ Guardar espesores
                     thicknesses_last = thicknesses.detach().cpu().numpy()
                     np.savetxt(f"thicknesses_last_iter_{self.numIter}.txt",
-                               thicknesses_last*1000, fmt="%.6f")
-
+                               thicknesses_last * 1000, fmt="%.6f")
+                
                     # 2️⃣ Guardar índices de refracción (aplanado a 2D)
                     refidx_last = refractive_indices.detach().cpu().numpy()
                     # aplanamos batch x capas como filas, frecuencias como columnas
                     refidx_flat = refidx_last.reshape(-1, refidx_last.shape[2])
                     np.savetxt(f"refidx_last_iter_{self.numIter}.txt", refidx_flat, fmt="%.6f")
-
-
+                
                     # 3️⃣ Guardar nombres de materiales por capa
-                    # Convertimos P (probabilidades) a índices de materiales
+                    # Convertimos el tercer valor devuelto por el generador (antes '_') a P
+                    _, _, P = self.generator(z, self.alpha)
                     result_mat = torch.argmax(P, dim=2)  # batch x num_layers
                     result_mat_np = result_mat.detach().cpu().numpy()
                     
                     with open(f"materials_last_iter_{self.numIter}.txt", 'w') as f:
                         for row in result_mat_np:  # cada fila = un diseño
-                            f.write(','.join([params.materials[i] for i in row]) + '\n')
+                            f.write(','.join([self.materials[i] for i in row]) + '\n')
                     
                     # =================================================================== #
                     # GUARDAR SOLO EL MSE DEL ÚLTIMO CONJUNTO DE BATCH - ULTIMA ITERACIÓN #

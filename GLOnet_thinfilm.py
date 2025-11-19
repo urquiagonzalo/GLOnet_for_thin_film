@@ -85,7 +85,7 @@ class GLOnet():
                 z = self.sample_z(self.batch_size)
 
                 # generate a batch of iamges
-                thicknesses, refractive_indices, _ = self.generator(z, self.alpha)
+                thicknesses, refractive_indices, P = self.generator(z, self.alpha)
                 
                 # ---------------------------------------------------------
                 # AGREGADO PARA GUARDAR ESTRUCTURAS EN LA ÚLTIMA ITERACIÓN

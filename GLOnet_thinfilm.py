@@ -122,10 +122,10 @@ class GLOnet():
                    
                     # si estás en Colab:
                     from google.colab import files
-                    files.download(f"thicknesses_last_iter_{self.numIter}.txt")
-                    files.download(f"refidx_last_iter_{self.numIter}.txt")
-                    files.download(f"materials_last_iter_{self.numIter}.txt")
-                    #files.download(f"msexbatch_last_iter_{self.numIter}.txt")
+                    files.download(f"thicknesses_last_iter_{self.numIter}_Semilla{seed}.txt")
+                    files.download(f"refidx_last_iter_{self.numIter}_Semilla{seed}.txt")
+                    files.download(f"materials_last_iter_{self.numIter}_Semilla{seed}.txt")
+                    #files.download(f"msexbatch_last_iter_{self.numIter}_Semilla{seed}.txt")
                  # -----------------------------------------------
                  # -----------------------------------------------
 

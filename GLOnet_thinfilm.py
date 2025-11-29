@@ -62,7 +62,7 @@ class GLOnet():
         self.batch_mse_training = []                                 #GU: mse batch
         
         
-    def train(self):
+    def train(self,seed):
         self.generator.train()
             
         # training loop

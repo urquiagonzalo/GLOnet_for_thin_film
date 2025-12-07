@@ -152,10 +152,10 @@ class GLOnet():
                     #           last_batch_mse, fmt="%.8f")
                    
                     # si estás en Colab:
-                    from google.colab import files
-                    files.download(f"Espesores_Ultima_iter_{self.numIter}_Semilla{seed}.txt")
+                    #from google.colab import files
+                    #files.download(f"Espesores_Ultima_iter_{self.numIter}_Semilla{seed}.txt")
                     #files.download(f"refidx_last_iter_{self.numIter}_Semilla{seed}.txt")
-                    files.download(f"Materiales_Ultima_iter_{self.numIter}_Semilla{seed}.txt")
+                    #files.download(f"Materiales_Ultima_iter_{self.numIter}_Semilla{seed}.txt")
                     #files.download(f"msexbatch_last_iter_{self.numIter}_Semilla{seed}.txt")
                  # -----------------------------------------------
                  # -----------------------------------------------

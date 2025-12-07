@@ -64,6 +64,9 @@ class GLOnet():
         
     def train(self,seed):
         self.generator.train()
+
+        # GU7/12: Lista de iteraciones que querés descargar
+        self.iters_to_download = [300, 400]
             
         # training loop
         with tqdm(total=self.numIter) as t:
@@ -88,30 +91,58 @@ class GLOnet():
                 thicknesses, refractive_indices, P = self.generator(z, self.alpha)
                 
                 # ---------------------------------------------------------
-                # AGREGADO PARA GUARDAR ESTRUCTURAS EN LA ÚLTIMA ITERACIÓN
-                # --------------------------------------------------------
-           
-                if it == self.numIter:   # última iteración
+                # AGREGADO PARA GUARDAR ESTRUCTURAS EN ALGUNAS ITERACIONES
+                # ---------------------------------------------------------
+
+                # 1️⃣ Guardar espesores
+                thicknesses_np = thicknesses.detach().cpu().numpy()
+                np.savetxt(f"Espesores_iter_{it}_Semilla{seed}.txt",
+                thicknesses_np * 1000, fmt="%.6f")
+                
+                # 2️⃣ Guardar índices de refracción (aplanado a 2D)
+                refidx_np = refractive_indices.detach().cpu().numpy()
+                refidx_flat = refidx_np.reshape(-1, refidx_np.shape[2])
+                np.savetxt(f"refidx_iter_{it}_Semilla{seed}.txt",
+                           refidx_flat, fmt="%.6f")
+                
+                #3️⃣ Guardar nombres de materiales por capa
+                result_mat = torch.argmax(P, dim=2).detach().cpu().numpy()
+                with open(f"Materiales_iter_{it}_Semilla{seed}.txt", 'w') as f:
+                    for row in result_mat:
+                        f.write(','.join([self.materials[i] for i in row]) + '\n')
+                        
+                # ============================================================
+                #        DESCARGAR SÓLO ALGUNAS ITERACIONES DEFINIDAS
+                # ============================================================
+                if it in self.iters_to_download:
+                    from google.colab import files
+                    files.download(f"Espesores_iter_{it}_Semilla{seed}.txt")
+                    files.download(f"refidx_iter_{it}_Semilla{seed}.txt")
+                    files.download(f"Materiales_iter_{it}_Semilla{seed}.txt")
+                    
+                ################################################################################    
+                ## if it == self.numIter:   # última iteración
                     # 1️⃣ Guardar espesores
-                    thicknesses_last = thicknesses.detach().cpu().numpy()
-                    np.savetxt(f"Espesores_Ultima_iter_{self.numIter}_Semilla{seed}.txt",
-                               thicknesses_last * 1000, fmt="%.6f")
+                    #thicknesses_last = thicknesses.detach().cpu().numpy()
+                    #np.savetxt(f"Espesores_Ultima_iter_{self.numIter}_Semilla{seed}.txt",
+                               #thicknesses_last * 1000, fmt="%.6f")                
                 
                     # 2️⃣ Guardar índices de refracción (aplanado a 2D)
-                    refidx_last = refractive_indices.detach().cpu().numpy()
+                    #refidx_last = refractive_indices.detach().cpu().numpy()
                     # aplanamos batch x capas como filas, frecuencias como columnas
-                    refidx_flat = refidx_last.reshape(-1, refidx_last.shape[2])
-                    np.savetxt(f"refidx_last_iter_{self.numIter}.txt", refidx_flat, fmt="%.6f")
+                    #refidx_flat = refidx_last.reshape(-1, refidx_last.shape[2])
+                    #np.savetxt(f"refidx_last_iter_{self.numIter}.txt", refidx_flat, fmt="%.6f")
                 
                     # 3️⃣ Guardar nombres de materiales por capa
                     # Convertimos el tercer valor devuelto por el generador (antes '_') a P
-                    _, _, P = self.generator(z, self.alpha)
-                    result_mat = torch.argmax(P, dim=2)  # batch x num_layers
-                    result_mat_np = result_mat.detach().cpu().numpy()
+                    #_, _, P = self.generator(z, self.alpha)
+                    #result_mat = torch.argmax(P, dim=2)  # batch x num_layers
+                    #result_mat_np = result_mat.detach().cpu().numpy()
                     
-                    with open(f"Materiales_Ultima_iter_{self.numIter}_Semilla{seed}.txt", 'w') as f:
-                        for row in result_mat_np:  # cada fila = un diseño
-                            f.write(','.join([self.materials[i] for i in row]) + '\n')
+                    #with open(f"Materiales_Ultima_iter_{self.numIter}_Semilla{seed}.txt", 'w') as f:
+                    #    for row in result_mat_np:  # cada fila = un diseño
+                    #        f.write(','.join([self.materials[i] for i in row]) + '\n')
+                    #######################################################################
                     
                     # =================================================================== #
                     # GUARDAR SOLO EL MSE DEL ÚLTIMO CONJUNTO DE BATCH - ULTIMA ITERACIÓN #

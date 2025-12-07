@@ -103,7 +103,7 @@ class GLOnet():
                 refidx_np = refractive_indices.detach().cpu().numpy()
                 refidx_flat = refidx_np.reshape(-1, refidx_np.shape[2])
                 # np.savetxt(f"refidx_iter_{it}_Semilla{seed}.txt",
-                           refidx_flat, fmt="%.6f")
+                           #refidx_flat, fmt="%.6f")
                 
                 #3️⃣ Guardar nombres de materiales por capa
                 result_mat = torch.argmax(P, dim=2).detach().cpu().numpy()

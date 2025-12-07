@@ -66,7 +66,7 @@ class GLOnet():
         self.generator.train()
 
         # GU7/12: Lista de iteraciones que querés descargar
-        self.iters_to_download = [300, 400]
+        self.iters_to_download = [1, 50, 100, 150, 200, 250, 300, 350, 400]
             
         # training loop
         with tqdm(total=self.numIter) as t:

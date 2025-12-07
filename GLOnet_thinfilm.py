@@ -102,7 +102,7 @@ class GLOnet():
                 # 2️⃣ Guardar índices de refracción (aplanado a 2D)
                 refidx_np = refractive_indices.detach().cpu().numpy()
                 refidx_flat = refidx_np.reshape(-1, refidx_np.shape[2])
-                np.savetxt(f"refidx_iter_{it}_Semilla{seed}.txt",
+                # np.savetxt(f"refidx_iter_{it}_Semilla{seed}.txt",
                            refidx_flat, fmt="%.6f")
                 
                 #3️⃣ Guardar nombres de materiales por capa
@@ -117,7 +117,7 @@ class GLOnet():
                 if it in self.iters_to_download:
                     from google.colab import files
                     files.download(f"Espesores_iter_{it}_Semilla{seed}.txt")
-                    files.download(f"refidx_iter_{it}_Semilla{seed}.txt")
+                    #files.download(f"refidx_iter_{it}_Semilla{seed}.txt")
                     files.download(f"Materiales_iter_{it}_Semilla{seed}.txt")
                     
                 ################################################################################    

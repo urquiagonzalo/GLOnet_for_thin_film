@@ -212,7 +212,8 @@ class GLOnet():
             if self.user_define:
                 n_database = self.n_database # do not support dispersion
             else:
-                n_database = self.matdatabase.interp_wv(2 * math.pi/kvector, self.materials, True).unsqueeze(0).unsqueeze(0).type(self.dtype)
+                # n_database = self.matdatabase.interp_wv(2 * math.pi/kvector, self.materials, True).unsqueeze(0).unsqueeze(0).type(self.dtype)      # lee n
+                n_database = self.matdatabase.interp_wv(2 * math.pi/kvector, self.materials    ).unsqueeze(0).unsqueeze(0).type(self.dtype)          # lee n y k
             
             one_hot = torch.eye(len(self.materials)).type(self.dtype)
             ref_idx = torch.sum(one_hot[result_mat].unsqueeze(-1) * n_database, dim=2)
@@ -220,7 +221,8 @@ class GLOnet():
             if self.user_define:
                 ref_idx = refractive_indices
             else:
-                n_database = self.matdatabase.interp_wv(2 * math.pi/kvector, self.materials, True).unsqueeze(0).unsqueeze(0).type(self.dtype)
+                # n_database = self.matdatabase.interp_wv(2 * math.pi/kvector, self.materials, True).unsqueeze(0).unsqueeze(0).type(self.dtype)      # lee n
+                n_database = self.matdatabase.interp_wv(2 * math.pi/kvector, self.materials      ).unsqueeze(0).unsqueeze(0).type(self.dtype)        # lee n y k
                 ref_idx = torch.sum(P.unsqueeze(-1) * n_database, dim=2)
         #GU5/9: modificado para considerar refelexión (True en programa principal) o transmisión (False) 
         if self.spectra:
@@ -237,7 +239,8 @@ class GLOnet():
             inc_angles = self.theta
         if pol is None:
             pol = self.pol  
-        n_database = self.matdatabase.interp_wv(2 * math.pi/kvector, self.materials, True).unsqueeze(0).unsqueeze(0).type(self.dtype)
+        # n_database = self.matdatabase.interp_wv(2 * math.pi/kvector, self.materials, True).unsqueeze(0).unsqueeze(0).type(self.dtype)              # lee n
+        n_database = self.matdatabase.interp_wv(2 * math.pi/kvector, self.materials, True).unsqueeze(0).unsqueeze(0).type(self.dtype)                # lee n Y K
         one_hot = torch.eye(len(self.materials)).type(self.dtype)
         ref_idx = torch.sum(one_hot[result_mat].unsqueeze(-1) * n_database, dim=2)
         #reflection = TMM_solver(thicknesses, ref_idx, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)

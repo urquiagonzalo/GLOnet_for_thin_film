@@ -370,24 +370,29 @@ class GLOnet():
     def sample_z(self, batch_size):
         return (torch.randn(batch_size, self.noise_dim, requires_grad=True)).type(self.dtype)
 
-    """ 
-    REVISAR
+   
+    # Función para calcular la integral numérica de un espectro usando la regla del trapecio.
     def spectra_int(self, spectra, k, dim):
         lambdas = 2*math.pi/self.k
         return torch.trapz(spectra, lambdas, dim= dim)
-    
-    def sensor_signal_1(self, k, spectra_empty, spectra_full):
-        lambdas = 2 * math.pi / self.k
-        led_x_ldr = self.to_cuda_if_available(torch.from_numpy(self.led_spline(lambdas) * self.ldr_spline(lambdas)))
         
-        signal_empty = torch.matmul(spectra_empty.squeeze(),torch.diag(led_x_ldr))
-        signal_full = torch.matmul(spectra_full.squeeze(),torch.diag(led_x_ldr))
-        signal_diff = signal_empty - signal_full
-        int_led = self.spectra_int(self.to_cuda_if_available(torch.from_numpy(self.led_spline(lambdas))), self.k, dim = 0)
-        int_diff = self.spectra_int(signal_diff, self.k, dim = 1)
+    # Función que mide cuánta diferencia detecta un sensor entre dos espectros (vacío vs lleno), ponderado por la respuesta del sistema óptico
+    def sensor_signal_1(self, k, spectra_empty, spectra_full): # función de la página 56
+        lambdas = 2 * math.pi / self.k
+        # La siguiente línea construye la respuesta espectral combinada del sistema (fuente (led)  + detector (ldr)) y la prepara como tensor en PyTorch. "R(λ)=LED(λ)⋅LDR(λ)"       
+        led_x_ldr = self.to_cuda_if_available(torch.from_numpy(self.led_spline(lambdas) * self.ldr_spline(lambdas)))   
+
+        # Usamos "torch.diag(led_x_ldr)" que convierte el vector led_x_ldr en una matriz diagonal, donde wi=LED(λi)⋅LDR(λi)
+        # matmul hace: [S1​,S2​,…,Sn​]⋅diag(w1​,w2​,…,wn​)=[S1​w1​,S2​w2​,…,Sn​wn​] # ver si da lo mismo usando "signal_empty = spectra_empty.squeeze() * led_x_ldr" debería ser más rápido
+
+        signal_empty = torch.matmul(spectra_empty.squeeze(),torch.diag(led_x_ldr))                                         # Aplica la respuesta espectral del sistema (LED × LDR) al espectro spectra_empty, ponderando cada longitud de onda.
+        signal_full = torch.matmul(spectra_full.squeeze(),torch.diag(led_x_ldr))                                           # Aplica la respuesta espectral del sistema (LED × LDR) al espectro spectra_full, ponderando cada longitud de onda.
+        signal_diff = signal_empty - signal_full                                                                           # Diferencia  
+        int_led = self.spectra_int(self.to_cuda_if_available(torch.from_numpy(self.led_spline(lambdas))), self.k, dim = 0) # Calcula la integral del espectro del LED
+        int_diff = self.spectra_int(signal_diff, self.k, dim = 1)                                                          # Calcula la integral de la diferencia de los espectros
         sensor_signal= torch.abs(int_diff)/int_led
         return sensor_signal   
-
+    """
     def sensor_signal_2(self, k, spectra_empty, spectra_full_A, spectra_full_B):
         lambdas = 2 * math.pi / self.k
         led_x_ldr = self.to_cuda_if_available(torch.from_numpy(self.led_spline(lambdas) * self.ldr_spline(lambdas)))

@@ -53,6 +53,11 @@ class GLOnet():
         self.pol = params.pol # str of pol
         self.target_reflection = params.target_reflection.type(self.dtype) 
         # 1 x number of frequencies x number of angles x (number of pol or 1)
+
+        # Si trabajamos en modo sensor, leemos los archivos CSV del LED y del LDR
+        if self.sensor:
+            self.led_spline = self._create_spline("true-green-osram.csv")
+            self.ldr_spline = self._create_spline("ldr.csv")
         
         # tranining history
         self.loss_training = []

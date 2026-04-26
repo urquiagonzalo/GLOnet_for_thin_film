@@ -189,13 +189,29 @@ class GLOnet():
                 # construct the loss 
                 #GU5/9: modificado para considerar refelexión (True en programa principal) o transmisión (False) 
                 if self.spectra:
-                    g_loss = self.global_loss_function(reflection)
-                    g_mse  = self.global_mse_function(reflection)            #GU: mse
-                    mse_per_sample = self.batch_mse_function(reflection)     #GU: mse batch
+                    #g_loss = self.global_loss_function(reflection)                               de antes borrar 
+                    #g_mse  = self.global_mse_function(reflection)            #GU: mse            de antes borrar 
+                    #mse_per_sample = self.batch_mse_function(reflection)     #GU: mse batch      de antes borrar
+
+                    sensor_signal = self.sensor_signal_2(self.k, reflection_air, reflection_water) if self.sensor else None            # métrica para usar en sensor
+                    g_loss = self.global_loss_function(sensor_signal) if self.sensor else self.global_loss_function(reflection)   
+                    g_mse = self.global_mse_function(sensor_signal) if self.sensor else self.global_mse_function(reflection)           #GU: mse
+                    mse_per_sample = self.batch_mse_function(sensor_signal) if self.sensor else self.batch_mse_function(reflection)    #GU: mse
+                    
+                    
+                    FM = torch.pow(sensor_signal - 0.25, 2) if self.sensor else torch.pow(reflection - self.target_spectra, 2)         # VER AGREGADO DE DONDE VIENE
+                
                 else:
-                    g_loss = self.global_loss_function(transmission)
-                    g_mse  = self.global_mse_function(transmission)           #GU: mse
-                    mse_per_sample = self.batch_mse_function(transmission)    #GU: mse batch
+                    #g_loss = self.global_loss_function(transmission)                             de antes borrar 
+                    #g_mse  = self.global_mse_function(transmission)           #GU: mse           de antes borrar 
+                    #mse_per_sample = self.batch_mse_function(transmission)    #GU: mse batch      de antes borrar 
+                    
+                    sensor_signal = self.sensor_signal_2(self.k, transmission_air, transmission_water) if self.sensor else None            # métrica para usar en sensor
+                    g_loss = self.global_loss_function(sensor_signal) if self.sensor else self.global_loss_function(transmission)   
+                    g_mse = self.global_mse_function(sensor_signal) if self.sensor else self.global_mse_function(transmission)           #GU: mse
+                    mse_per_sample = self.batch_mse_function(sensor_signal) if self.sensor else self.batch_mse_function(transmission)    #GU: mse
+
+                    FM = torch.pow(sensor_signal - 0.25, 2) if self.sensor else torch.pow(transmission - self.target_spectra, 2)         # VER AGREGADO DE DONDE VIENE
                               
                 # record history
                 #self.record_history(g_loss, thicknesses, refractive_indices,g_mse)                  #GU: solo mse
@@ -219,55 +235,128 @@ class GLOnet():
 
         self.generator.eval()
         z = self.sample_z(num_devices) # Llama al creador de números aleatorios
-        thicknesses, refractive_indices, P = self.generator(z, self.alpha)
-        result_mat = torch.argmax(P, dim=2).detach() # batch size x number of layer
 
-        if not grayscale:
-            if self.user_define:
-                n_database = self.n_database # do not support dispersion
+        # IF (self.sensor) PARA CONSIDERAR CASO DE SENSOR
+        if self.sensor:
+             thicknesses, refractive_indices_air, refractive_indices_water, P = self.generator(z, self.alpha)
+             result_mat = torch.argmax(P, dim=2).detach() # batch size x number of layer
+             if not grayscale:
+                ref_idx_air, ref_idx_water  = self._calculate_refractive_indices(kvector)     # calculate_refractive_indices es una función definida más abajo
             else:
-                # n_database = self.matdatabase.interp_wv(2 * math.pi/kvector, self.materials, True).unsqueeze(0).unsqueeze(0).type(self.dtype)      # lee n
-                n_database = self.matdatabase.interp_wv(2 * math.pi/kvector, self.materials    ).unsqueeze(0).unsqueeze(0).type(self.dtype)          # lee n y k
+                if self.user_define:
+                    ref_idx_air, ref_idx_water = refractive_indices_air, refractive_indices_water
+                else:   
+                    #n_database_air = self.to_cuda_if_available(self.matdatabase_air.interp_wv(2 * math.pi/kvector, self.materials_air, True).unsqueeze(0).unsqueeze(0))         # lee n
+                    n_database_air = self.to_cuda_if_available(self.matdatabase_air.interp_wv(2 * math.pi/kvector, self.materials_air,     ).unsqueeze(0).unsqueeze(0))         # lee n y k
+                    ref_idx_air = torch.sum(P.unsqueeze(-1) * n_database_air, dim=2)
+                    
+                    #n_database_water = self.to_cuda_if_available(self.matdatabase_water.interp_wv(2 * math.pi/kvector, self.materials_water, True).unsqueeze(0).unsqueeze(0))   # lee n
+                    n_database_water = self.to_cuda_if_available(self.matdatabase_water.interp_wv(2 * math.pi/kvector, self.materials_water       ).unsqueeze(0).unsqueeze(0))  # lee n y k
+                    ref_idx_full_water = torch.sum(P.unsqueeze(-1) * n_database_water, dim=2)
+ 
+                    # Modificado para considerar refelexión (True en programa principal) o transmisión (False) 
+                    if self.spectra:
+                        reflection_air   = TMM_solver(thicknesses, ref_idx_air, self.n_bot, self.n_top, self.to_cuda_if_available(kvector), self.to_cuda_if_available(inc_angles), pol)
+                        reflection_water = TMM_solver(thicknesses, ref_idx_water, self.n_bot, self.n_top, self.to_cuda_if_available(kvector), self.to_cuda_if_available(inc_angles), pol)
+                        sensor_signal = self.sensor_signal_2(self.to_cuda_if_available(kvector), reflection_air, reflection_water)
+                        return (thicknesses, result_mat, sensor_signal, ref_idx_air, reflection_air, ref_idx_water, reflection_water)
+                    else:
+                        transmission_air   = TMM_solver(thicknesses, ref_idx_air  , self.n_bot, self.n_top, self.to_cuda_if_available(kvector), self.to_cuda_if_available(inc_angles), pol)
+                        transmission_water = TMM_solver(thicknesses, ref_idx_water, self.n_bot, self.n_top, self.to_cuda_if_available(kvector), self.to_cuda_if_available(inc_angles), pol)
+                        sensor_signal = self.sensor_signal_2(self.to_cuda_if_available(kvector), transmission_air, transmission_water)
+                        return (thicknesses, result_mat, sensor_signal, ref_idx_air, transmission_air, ref_idx_water, transmission_water)
+        
+        # ELSE PARA TRABAJAR CON LA VERSIÓN ORIGINAL
+        else:
+            thicknesses, refractive_indices, P = self.generator(z, self.alpha)
+            result_mat = torch.argmax(P, dim=2).detach() # batch size x number of layer
+            if not grayscale:     
+                if self.user_define:
+                    n_database = self.n_database # do not support dispersion    
+                else:
+                    # n_database = self.matdatabase.interp_wv(2 * math.pi/kvector, self.materials, True).unsqueeze(0).unsqueeze(0).type(self.dtype)      # lee n
+                    n_database = self.matdatabase.interp_wv(2 * math.pi/kvector, self.materials    ).unsqueeze(0).unsqueeze(0).type(self.dtype)          # lee n y k
             
-            one_hot = torch.eye(len(self.materials)).type(self.dtype)
-            ref_idx = torch.sum(one_hot[result_mat].unsqueeze(-1) * n_database, dim=2)
-        else:
-            if self.user_define:
-                ref_idx = refractive_indices
+                one_hot = torch.eye(len(self.materials)).type(self.dtype)
+                ref_idx = torch.sum(one_hot[result_mat].unsqueeze(-1) * n_database, dim=2)
             else:
-                # n_database = self.matdatabase.interp_wv(2 * math.pi/kvector, self.materials, True).unsqueeze(0).unsqueeze(0).type(self.dtype)      # lee n
-                n_database = self.matdatabase.interp_wv(2 * math.pi/kvector, self.materials      ).unsqueeze(0).unsqueeze(0).type(self.dtype)        # lee n y k
-                ref_idx = torch.sum(P.unsqueeze(-1) * n_database, dim=2)
-        #GU5/9: modificado para considerar refelexión (True en programa principal) o transmisión (False) 
-        if self.spectra:
-            reflection = TMM_solver(self, thicknesses, ref_idx, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
-            return (thicknesses, ref_idx, result_mat, reflection)
+                if self.user_define:
+                    ref_idx = refractive_indices
+                else:
+                    # n_database = self.matdatabase.interp_wv(2 * math.pi/kvector, self.materials, True).unsqueeze(0).unsqueeze(0).type(self.dtype)      # lee n
+                    n_database = self.matdatabase.interp_wv(2 * math.pi/kvector, self.materials      ).unsqueeze(0).unsqueeze(0).type(self.dtype)        # lee n y k
+                    ref_idx = torch.sum(P.unsqueeze(-1) * n_database, dim=2)
+        
+            #GU5/9: modificado para considerar refelexión (True en programa principal) o transmisión (False) 
+            if self.spectra:
+                reflection = TMM_solver(self, thicknesses, ref_idx, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
+                return (thicknesses, ref_idx, result_mat, reflection)
+            else:
+                transmission = TMM_solver(self, thicknesses, ref_idx, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
+                return (thicknesses, ref_idx, result_mat, transmission)
+
+    # Función extra
+    def _calculate_refractive_indices(self, result_mat, kvector):
+        if self.user_define:
+            n_database_air = self.to_cuda_if_available(self.n_database_air)      # do not support dispersion
+            n_database_water = self.to_cuda_if_available(self.n_database_water)  # do not support dispersion
         else:
-            transmission = TMM_solver(self, thicknesses, ref_idx, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
-            return (thicknesses, ref_idx, result_mat, transmission)
+            n_database_air  = self.to_cuda_if_available(self.matdatabase_air.interp_wv(2 * math.pi / kvector, self.materials_empty, False).unsqueeze(0).unsqueeze(0))
+            n_database_water = self.to_cuda_if_available(self.matdatabase_water.interp_wv(2 * math.pi / kvector, self.materials_full_A, False).unsqueeze(0).unsqueeze(0))
+        one_hot = self.to_cuda_if_available(torch.eye(len(self.materials_empty)))
+        one_hot_mat = one_hot[result_mat].unsqueeze(-1)
+        ref_idx_air   = torch.sum(one_hot_mat * n_database_air, dim=2)
+        ref_idx_water = torch.sum(one_hot_mat * n_database_water, dim=2)
+        return (ref_idx_air, ref_idx_water) 
     
     def _TMM_solver(self, thicknesses, result_mat, kvector = None, inc_angles = None, pol = None):
-        if kvector is None:
-            kvector = self.k
-        if inc_angles is None:
-            inc_angles = self.theta
-        if pol is None:
-            pol = self.pol  
-        # n_database = self.matdatabase.interp_wv(2 * math.pi/kvector, self.materials, True).unsqueeze(0).unsqueeze(0).type(self.dtype)              # lee n
-        n_database = self.matdatabase.interp_wv(2 * math.pi/kvector, self.materials, True).unsqueeze(0).unsqueeze(0).type(self.dtype)                # lee n Y K
-        one_hot = torch.eye(len(self.materials)).type(self.dtype)
-        ref_idx = torch.sum(one_hot[result_mat].unsqueeze(-1) * n_database, dim=2)
-        #reflection = TMM_solver(thicknesses, ref_idx, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
-        #return reflection
-        #GU5/9: modificado para considerar refelexión (True en programa principal) o transmisión (False) 
-        if self.spectra:
-            reflection = TMM_solver(self, thicknesses, ref_idx, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
-            return reflection
-        else: 
-            transmission = TMM_solver(self, thicknesses, ref_idx, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
-            return transmission
-        #return reflection, transmission 
-    
+        if self.sensor:
+            if kvector is None:
+                kvector = self.k
+            if inc_angles is None:
+                inc_angles = self.theta
+            if pol is None:
+                pol = self.pol  
+            n_database_air = self.matdatabase_air.interp_wv(2 * math.pi/kvector, self.materials_air, False).unsqueeze(0).unsqueeze(0)
+            n_database_water = self.matdatabase_water.interp_wv(2 * math.pi/kvector, self.materials_water, False).unsqueeze(0).unsqueeze(0)
+            
+            one_hot = torch.eye(len(self.materials_empty))
+            one_hot_mat = one_hot[result_mat].unsqueeze(-1)
+            
+            ref_idx_air   = torch.sum(one_hot_mat * n_database_air, dim=2)
+            ref_idx_water = torch.sum(one_hot_mat * n_database_water, dim=2)
+
+            if self.spectra:
+                reflection_air     = TMM_solver(thicknesses, ref_idx_air, self.n_bot, self.n_top, kvector, inc_angles, pol)
+                reflection_water   = TMM_solver(thicknesses, ref_idx_water, self.n_bot, self.n_top, kvector, inc_angles, pol)
+                return (reflection_air, reflection_water) 
+            else:
+                transmission_air   = TMM_solver(thicknesses, ref_idx_air, self.n_bot, self.n_top, kvector, inc_angles, pol)
+                transmission_water = TMM_solver(thicknesses, ref_idx_water, self.n_bot, self.n_top, kvector, inc_angles, pol)
+                return (transmission_air, transmission_water)
+
+        # ELSE PARA TRABAJAR CON LA VERSIÓN ORIGINAL
+        else
+            if kvector is None:
+                kvector = self.k
+            if inc_angles is None:
+                inc_angles = self.theta
+            if pol is None:
+                pol = self.pol  
+            # n_database = self.matdatabase.interp_wv(2 * math.pi/kvector, self.materials, True).unsqueeze(0).unsqueeze(0).type(self.dtype)              # lee n
+            n_database = self.matdatabase.interp_wv(2 * math.pi/kvector, self.materials        ).unsqueeze(0).unsqueeze(0).type(self.dtype)                # lee n Y K
+            one_hot = torch.eye(len(self.materials)).type(self.dtype)
+            ref_idx = torch.sum(one_hot[result_mat].unsqueeze(-1) * n_database, dim=2)
+            #reflection = TMM_solver(thicknesses, ref_idx, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
+            #return reflection
+            #GU5/9: modificado para considerar refelexión (True en programa principal) o transmisión (False) 
+            if self.spectra:
+                reflection = TMM_solver(self, thicknesses, ref_idx, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
+                return reflection
+            else: 
+                transmission = TMM_solver(self, thicknesses, ref_idx, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
+                return transmission
+
     def update_alpha(self, normIter):
         self.alpha = round(normIter/0.05) * self.alpha_sup + 1.
 
@@ -275,6 +364,46 @@ class GLOnet():
     # Es decir, los números no son uniformes ni enteros; son valores continuos centrados en 0.
     def sample_z(self, batch_size):
         return (torch.randn(batch_size, self.noise_dim, requires_grad=True)).type(self.dtype)
+
+    """ 
+    REVISAR
+    def spectra_int(self, spectra, k, dim):
+        lambdas = 2*math.pi/self.k
+        return torch.trapz(spectra, lambdas, dim= dim)
+    
+    def sensor_signal_1(self, k, spectra_empty, spectra_full):
+        lambdas = 2 * math.pi / self.k
+        led_x_ldr = self.to_cuda_if_available(torch.from_numpy(self.led_spline(lambdas) * self.ldr_spline(lambdas)))
+        
+        signal_empty = torch.matmul(spectra_empty.squeeze(),torch.diag(led_x_ldr))
+        signal_full = torch.matmul(spectra_full.squeeze(),torch.diag(led_x_ldr))
+        signal_diff = signal_empty - signal_full
+        int_led = self.spectra_int(self.to_cuda_if_available(torch.from_numpy(self.led_spline(lambdas))), self.k, dim = 0)
+        int_diff = self.spectra_int(signal_diff, self.k, dim = 1)
+        sensor_signal= torch.abs(int_diff)/int_led
+        return sensor_signal   
+
+    def sensor_signal_2(self, k, spectra_empty, spectra_full_A, spectra_full_B):
+        lambdas = 2 * math.pi / self.k
+        led_x_ldr = self.to_cuda_if_available(torch.from_numpy(self.led_spline(lambdas) * self.ldr_spline(lambdas)))
+        int_led = self.spectra_int(self.to_cuda_if_available(torch.from_numpy(self.led_spline(lambdas))), self.k, dim = 0)
+        signal_empty = torch.matmul(spectra_empty.squeeze(),torch.diag(led_x_ldr))
+        signal_empty_int = self.spectra_int(signal_empty, self.k, dim = 1)
+        signal_A = torch.matmul(spectra_full_A.squeeze(),torch.diag(led_x_ldr))
+        signal_A_int = self.spectra_int(signal_A, self.k, dim = 1)
+        if torch.all(spectra_full_B == 1):
+            print("Warning: spectra_full_B is all ones, using signal_empty for sensor_signal_2")
+            signal_diff = signal_empty_int - signal_A_int  # Igual a sensor_signal_1 en este caso
+        else:
+            signal_B = torch.matmul(spectra_full_B.squeeze(),torch.diag(led_x_ldr))
+            signal_B_int = self.spectra_int(signal_B, self.k, dim = 1)
+            signal_diff = (signal_empty_int - signal_A_int) * (signal_A_int - signal_B_int) * (signal_B_int - signal_empty_int) / (int_led **3)
+        #int_led = self.spectra_int(self.to_cuda_if_available(torch.from_numpy(self.led_spline(lambdas))), self.k, dim = 0)
+        #int_diff = self.spectra_int(signal_diff, self.k, dim = 1)
+        #sensor_signal= torch.abs(signal_diff)/int_led
+        sensor_signal= torch.abs(signal_diff)
+        return sensor_signal 
+    """
    
     def global_mse_function(self, reflection):                               #MSE GLOBAL (promedio de todos los MSE de cada batch)
         return torch.mean(torch.pow(reflection - self.target_reflection, 2)) 

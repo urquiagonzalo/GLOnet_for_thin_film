@@ -198,7 +198,8 @@ class GLOnet():
                     #g_mse  = self.global_mse_function(reflection)            #GU: mse            de antes borrar 
                     #mse_per_sample = self.batch_mse_function(reflection)     #GU: mse batch      de antes borrar
 
-                    sensor_signal = self.sensor_signal_2(self.k, reflection_air, reflection_water) if self.sensor else None            # métrica para usar en sensor
+                    sensor_signal = self.sensor_signal_1(self.k, reflection_air, reflection_water) if self.sensor else None                                   # métrica para usar en sensor 
+                    #sensor_signal = self.sensor_signal_2(self.k, reflection_empty, reflection_full_A, reflection_full_B) if self.sensor else None            # 2 materiales
                     g_loss = self.global_loss_function(sensor_signal) if self.sensor else self.global_loss_function(reflection)   
                     g_mse = self.global_mse_function(sensor_signal) if self.sensor else self.global_mse_function(reflection)           #GU: mse
                     mse_per_sample = self.batch_mse_function(sensor_signal) if self.sensor else self.batch_mse_function(reflection)    #GU: mse
@@ -211,7 +212,9 @@ class GLOnet():
                     #g_mse  = self.global_mse_function(transmission)           #GU: mse           de antes borrar 
                     #mse_per_sample = self.batch_mse_function(transmission)    #GU: mse batch      de antes borrar 
                     
-                    sensor_signal = self.sensor_signal_2(self.k, transmission_air, transmission_water) if self.sensor else None            # métrica para usar en sensor
+                    sensor_signal = self.sensor_signal_1(self.k, transmission_air, transmission_water) if self.sensor else None                                # métrica para usar en sensor
+                    # sensor_signal = self.sensor_signal_2(self.k, transmission_empty, transmission_full_A, transmission_full_B) if self.sensor else None      # 2 materiales
+                    
                     g_loss = self.global_loss_function(sensor_signal) if self.sensor else self.global_loss_function(transmission)   
                     g_mse = self.global_mse_function(sensor_signal) if self.sensor else self.global_mse_function(transmission)           #GU: mse
                     mse_per_sample = self.batch_mse_function(sensor_signal) if self.sensor else self.batch_mse_function(transmission)    #GU: mse
@@ -263,12 +266,14 @@ class GLOnet():
                     if self.spectra:
                         reflection_air   = TMM_solver(thicknesses, ref_idx_air, self.n_bot, self.n_top, self.to_cuda_if_available(kvector), self.to_cuda_if_available(inc_angles), pol)
                         reflection_water = TMM_solver(thicknesses, ref_idx_water, self.n_bot, self.n_top, self.to_cuda_if_available(kvector), self.to_cuda_if_available(inc_angles), pol)
-                        sensor_signal = self.sensor_signal_2(self.to_cuda_if_available(kvector), reflection_air, reflection_water)
+                        sensor_signal = self.sensor_signal_1(self.to_cuda_if_available(kvector), reflection_air, reflection_water)
+                        #sensor_signal = self.sensor_signal_2(self.to_cuda_if_available(kvector), reflection_empty, reflection_full_A, reflection_full_B)      # 2 materiales distintos
                         return (thicknesses, result_mat, sensor_signal, ref_idx_air, reflection_air, ref_idx_water, reflection_water)
                     else:
                         transmission_air   = TMM_solver(thicknesses, ref_idx_air  , self.n_bot, self.n_top, self.to_cuda_if_available(kvector), self.to_cuda_if_available(inc_angles), pol)
                         transmission_water = TMM_solver(thicknesses, ref_idx_water, self.n_bot, self.n_top, self.to_cuda_if_available(kvector), self.to_cuda_if_available(inc_angles), pol)
-                        sensor_signal = self.sensor_signal_2(self.to_cuda_if_available(kvector), transmission_air, transmission_water)
+                        sensor_signal = self.sensor_signal_1(self.to_cuda_if_available(kvector), transmission_air, transmission_water)
+                        #sensor_signal = self.sensor_signal_2(self.to_cuda_if_available(kvector), transmission_empty, transmission_full_A, transmission_full_B) # 2 materiales distintos
                         return (thicknesses, result_mat, sensor_signal, ref_idx_air, transmission_air, ref_idx_water, transmission_water)
         
         # ELSE PARA TRABAJAR CON LA VERSIÓN ORIGINAL
@@ -391,8 +396,9 @@ class GLOnet():
         int_led = self.spectra_int(self.to_cuda_if_available(torch.from_numpy(self.led_spline(lambdas))), self.k, dim = 0) # Calcula la integral del espectro del LED
         int_diff = self.spectra_int(signal_diff, self.k, dim = 1)                                                          # Calcula la integral de la diferencia de los espectros
         sensor_signal= torch.abs(int_diff)/int_led
-        return sensor_signal   
-    """
+        return sensor_signal  
+
+    # Esta segunda función ya no mide una sola diferencia entre dos estados, sino que construye una métrica no lineal entre tres espectros distintos (A, B y vacío).
     def sensor_signal_2(self, k, spectra_empty, spectra_full_A, spectra_full_B):
         lambdas = 2 * math.pi / self.k
         led_x_ldr = self.to_cuda_if_available(torch.from_numpy(self.led_spline(lambdas) * self.ldr_spline(lambdas)))
@@ -413,7 +419,6 @@ class GLOnet():
         #sensor_signal= torch.abs(signal_diff)/int_led
         sensor_signal= torch.abs(signal_diff)
         return sensor_signal 
-    """
    
     def global_mse_function(self, reflection):                               #MSE GLOBAL (promedio de todos los MSE de cada batch)
         return torch.mean(torch.pow(reflection - self.target_reflection, 2)) 

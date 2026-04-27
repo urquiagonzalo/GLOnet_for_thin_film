@@ -246,9 +246,10 @@ class GLOnet():
 
         # IF (self.sensor) PARA CONSIDERAR CASO DE SENSOR
         if self.sensor:
-             thicknesses, refractive_indices_air, refractive_indices_water, P = self.generator(z, self.alpha)
-             result_mat = torch.argmax(P, dim=2).detach() # batch size x number of layer
-             if not grayscale:
+            thicknesses, refractive_indices_air, refractive_indices_water, P = self.generator(z, self.alpha)
+            result_mat = torch.argmax(P, dim=2).detach() # batch size x number of layer
+            
+            if not grayscale:
                 ref_idx_air, ref_idx_water  = self._calculate_refractive_indices(kvector)     # calculate_refractive_indices es una función definida más abajo
             else:
                 if self.user_define:

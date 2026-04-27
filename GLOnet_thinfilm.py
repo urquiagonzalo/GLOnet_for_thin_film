@@ -347,7 +347,7 @@ class GLOnet():
                 return (transmission_air, transmission_water)
 
         # ELSE PARA TRABAJAR CON LA VERSIÓN ORIGINAL
-        else
+        else:
             if kvector is None:
                 kvector = self.k
             if inc_angles is None:

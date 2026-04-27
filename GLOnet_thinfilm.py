@@ -36,10 +36,19 @@ class GLOnet():
         self.alpha_sup = params.alpha_sup
         self.iter0 = 0
         self.alpha = 0.1
-        self.spectra = params.spectra #GU5/9: permite considerar refelexión (True en programa principal) o transmisión (False) 
-    
+        
         # simulation parameters
         self.user_define = params.user_define
+        
+        # True en programa principal selecciona el modo sensor con métrica modificada y False selecciona optimizador clásico con la loss clásica 
+        if params.sensor: 
+            self.sensor = True
+        else:
+            self.sensor = False
+        
+        #GU5/9: True en programa principal considera refelexión o y False transmisión 
+        self.spectra = params.spectra 
+        
         if params.user_define:
             self.n_database = params.n_database
         else:
@@ -55,7 +64,7 @@ class GLOnet():
         # 1 x number of frequencies x number of angles x (number of pol or 1)
 
         # Si trabajamos en modo sensor, leemos los archivos CSV del LED y del LDR
-        if self.sensor:
+        if self.sensor: 
             self.led_spline = self._create_spline("true-green-osram.csv")
             self.ldr_spline = self._create_spline("ldr.csv")
         

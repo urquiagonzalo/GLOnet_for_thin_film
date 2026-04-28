@@ -203,30 +203,22 @@ class GLOnet():
                 # construct the loss 
                 #GU5/9: modificado para considerar refelexión (True en programa principal) o transmisión (False) 
                 if self.spectra:
-                    #g_loss = self.global_loss_function(reflection)                               de antes borrar 
-                    #g_mse  = self.global_mse_function(reflection)            #GU: mse            de antes borrar 
-                    #mse_per_sample = self.batch_mse_function(reflection)     #GU: mse batch      de antes borrar
-
                     sensor_signal = self.sensor_signal_1(self.k, reflection_air, reflection_water) if self.sensor else None                                   # Se usa en modo sensor 
                     #sensor_signal = self.sensor_signal_2(self.k, reflection_empty, reflection_full_A, reflection_full_B) if self.sensor else None            # 2 materiales
                     
                     g_loss = self.global_loss_function(sensor_signal) if self.sensor else self.global_loss_function(reflection)        # En modo sensor usa "sensor_signal" y en modo clásico "reflection"
                     g_mse = self.global_mse_function(sensor_signal) if self.sensor else self.global_mse_function(reflection)           #GU: mse
-                    mse_per_sample = self.batch_mse_function(sensor_signal) if self.sensor else self.batch_mse_function(reflection)    #GU: mse
+                    mse_per_sample = self.batch_mse_function(sensor_signal) if self.sensor else self.batch_mse_function(reflection)    #GU: mse batch 
                     
                     FM = torch.pow(sensor_signal - 0.25, 2) if self.sensor else torch.pow(reflection - self.target_spectra, 2)         # VER AGREGADO DE DONDE VIENE
                 
                 else:
-                    #g_loss = self.global_loss_function(transmission)                             de antes borrar 
-                    #g_mse  = self.global_mse_function(transmission)           #GU: mse           de antes borrar 
-                    #mse_per_sample = self.batch_mse_function(transmission)    #GU: mse batch      de antes borrar 
-                    
                     sensor_signal = self.sensor_signal_1(self.k, transmission_air, transmission_water) if self.sensor else None                                # métrica para usar en sensor
                     # sensor_signal = self.sensor_signal_2(self.k, transmission_empty, transmission_full_A, transmission_full_B) if self.sensor else None      # 2 materiales
                     
                     g_loss = self.global_loss_function(sensor_signal) if self.sensor else self.global_loss_function(transmission)   
                     g_mse = self.global_mse_function(sensor_signal) if self.sensor else self.global_mse_function(transmission)           #GU: mse
-                    mse_per_sample = self.batch_mse_function(sensor_signal) if self.sensor else self.batch_mse_function(transmission)    #GU: mse
+                    mse_per_sample = self.batch_mse_function(sensor_signal) if self.sensor else self.batch_mse_function(transmission)    #GU: mse batch 
 
                     FM = torch.pow(sensor_signal - 0.25, 2) if self.sensor else torch.pow(transmission - self.target_spectra, 2)         # VER AGREGADO DE DONDE VIENE
                               
@@ -292,6 +284,7 @@ class GLOnet():
         else:
             thicknesses, refractive_indices, P = self.generator(z, self.alpha)
             result_mat = torch.argmax(P, dim=2).detach() # batch size x number of layer
+            
             if not grayscale:     
                 if self.user_define:
                     n_database = self.n_database # do not support dispersion    
@@ -438,7 +431,7 @@ class GLOnet():
     def batch_mse_function(self, reflection):                                #MSE DE CADA BATCH
         return torch.mean(torch.pow(reflection - self.target_spectra, 2), dim=(1,2,3))
         
-    def global_loss_function(self, reflection): #VER MÉTTRICA DE SENSOR PORQUE USA 0.25
+    def global_loss_function(self, reflection): #VER MÉTRICA DE SENSOR PORQUE USA 0.25
         return -torch.mean(torch.exp(-torch.mean(torch.pow(reflection - self.target_spectra, 2), dim=(1,2,3))/self.sigma)) if not self.sensor else -torch.mean(torch.exp(-torch.pow(reflection - 0.25, 2)/self.sigma))
         
     def global_loss_function_robust(self, reflection, thicknesses):

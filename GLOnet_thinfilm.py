@@ -290,9 +290,11 @@ class GLOnet():
                     n_database = self.n_database # do not support dispersion    
                 else:
                     #n_database = self.matdatabase.interp_wv(2 * math.pi/kvector, self.materials, True).unsqueeze(0).unsqueeze(0).type(self.dtype)      # lee n
-                         
-                    n_database = self.matdatabase.interp_wv(2 * math.pi / kvector,self.materials,False).unsqueeze(0).unsqueeze(0)                       # con lectura n y k
-                    n_database_complex = torch.complex(n_database[..., 0],n_database[..., 1]).to(P.device)                                              # con lectura n y k
+                    
+                    n_database = self.matdatabase.interp_wv(2 * math.pi / kvector,self.materials,False).unsqueeze(0).unsqueeze(0)                       # con lectura n y k (ver la idea)                 
+                    if isinstance(n_database, tuple): 
+                        n_database = torch.stack(n_database, dim=-1)
+                    n_database_complex = torch.complex(n_database[..., 0],n_database[..., 1]).to(P.device)                                              
              
                 one_hot = torch.eye(len(self.materials)).type(self.dtype)
                 #ref_idx = torch.sum(one_hot[result_mat].unsqueeze(-1) * n_database, dim=2)
@@ -302,8 +304,11 @@ class GLOnet():
                     ref_idx = refractive_indices
                 else:
                     #n_database = self.matdatabase.interp_wv(2 * math.pi/kvector, self.materials, True).unsqueeze(0).unsqueeze(0).type(self.dtype)      # lee n
-                    n_database = self.matdatabase.interp_wv(2 * math.pi/kvector, self.materials, False).unsqueeze(0).unsqueeze(0)                       # con lectura n y k (terminar de arrgelar la idea)
-                    n_database_complex = torch.complex(n_database[..., 0],n_database[..., 1]).to(P.device)                                              # con lectura n y k
+                    
+                    n_database = self.matdatabase.interp_wv(2 * math.pi/kvector, self.materials, False)                                                 # con lectura n y k (ver la idea)  
+                    if isinstance(n_database, tuple):
+                        n_database = torch.stack(n_database, dim=-1)
+                    n_database_complex = torch.complex(n_database[..., 0],n_database[..., 1]).to(P.device)                                           
 
                     #ref_idx = torch.sum(P.unsqueeze(-1) * n_database, dim=2)
                     ref_idx = torch.sum(P.unsqueeze(-1) * n_database_complex, dim=2)                                                                    # con lectura n y k  
@@ -366,8 +371,10 @@ class GLOnet():
                 pol = self.pol  
             #n_database = self.matdatabase.interp_wv(2 * math.pi/kvector, self.materials, True).unsqueeze(0).unsqueeze(0).type(self.dtype)              # lee n
             
-            n_database = self.matdatabase.interp_wv(2 * math.pi/kvector, self.materials, False).unsqueeze(0).unsqueeze(0)                               # con lectura n y k  
-            n_database_complex = torch.complex(n_database[..., 0],n_database[..., 1]).to(P.device)                                                      # con lectura n y k
+            n_database = self.matdatabase.interp_wv(2 * math.pi/kvector, self.materials, False)                                                         # con lectura n y k (ver la idea)  
+            if isinstance(n_database, tuple):
+                n_database = torch.stack(n_database, dim=-1)
+            n_database_complex = torch.complex(n_database[..., 0],n_database[..., 1]).to(P.device)                                                      
             
             one_hot = torch.eye(len(self.materials)).type(self.dtype)
             #ref_idx = torch.sum(one_hot[result_mat].unsqueeze(-1) * n_database, dim=2)

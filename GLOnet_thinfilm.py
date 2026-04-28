@@ -291,7 +291,7 @@ class GLOnet():
                 else:
                     #n_database = self.matdatabase.interp_wv(2 * math.pi/kvector, self.materials, True).unsqueeze(0).unsqueeze(0).type(self.dtype)      # lee n
                     
-                    n_database = self.matdatabase.interp_wv(2 * math.pi / kvector,self.materials,False).unsqueeze(0).unsqueeze(0)                       # con lectura n y k (ver la idea)                 
+                    n_database = self.matdatabase.interp_wv(2 * math.pi / kvector,self.materials,False)                                                 # con lectura n y k (ver la idea)                 
                     if isinstance(n_database, tuple): 
                         n_database = torch.stack(n_database, dim=-1)
                     n_database_complex = torch.complex(n_database[..., 0],n_database[..., 1]).to(P.device)                                              

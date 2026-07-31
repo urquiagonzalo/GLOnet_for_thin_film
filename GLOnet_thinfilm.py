@@ -4,6 +4,7 @@ import numpy as np
 import math
 import torch.nn as nn
 import torch.nn.functional as F
+from scipy.interpolate import UnivariateSpline
 from TMM import *
 from tqdm import tqdm
 from net import Generator, ResGenerator
@@ -74,7 +75,15 @@ class GLOnet():
         self.thicknesses_training = []
         self.mse_training = []                                       #GU: mse
         self.batch_mse_training = []                                 #GU: mse batch
-        
+
+    # Función definida para interpolar los datos de los archivos CSV del LED y del LDR
+    def _create_spline(self, filename):
+        df = pd.read_csv(filename, sep=';', decimal=',')
+        df.columns = ['Wavelength [nm]', 'Reflection spectra']
+        spline = UnivariateSpline(df['Wavelength [nm]'] / 1000, df['Reflection spectra'])
+        spline.set_smoothing_factor(0.006)
+        return spline
+    
         
     def train(self,seed):
         self.generator.train()

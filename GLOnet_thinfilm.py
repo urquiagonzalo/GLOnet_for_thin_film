@@ -211,6 +211,7 @@ class GLOnet():
 
                 # construct the loss 
                 #GU5/9: modificado para considerar refelexión (True en programa principal) o transmisión (False) 
+                difrel_Obj = 1
                 if self.spectra:
                     sensor_signal = self.sensor_signal_1(self.k, reflection_air, reflection_water) if self.sensor else None                                   # Se usa en modo sensor 
                     #sensor_signal = self.sensor_signal_2(self.k, reflection_empty, reflection_full_A, reflection_full_B) if self.sensor else None            # 2 materiales
@@ -219,7 +220,7 @@ class GLOnet():
                     g_mse = self.global_mse_function(sensor_signal) if self.sensor else self.global_mse_function(reflection)           #GU: mse
                     mse_per_sample = self.batch_mse_function(sensor_signal) if self.sensor else self.batch_mse_function(reflection)    #GU: mse batch 
                     
-                    FM = torch.pow(sensor_signal - 0.25, 2) if self.sensor else torch.pow(reflection - self.target_spectra, 2)         # VER AGREGADO DE DONDE VIENE
+                    FM = torch.pow(sensor_signal - difrel_Obj, 2) if self.sensor else torch.pow(reflection - self.target_spectra, 2)         # VER AGREGADO DE DONDE VIENE
                 
                 else:
                     sensor_signal = self.sensor_signal_1(self.k, transmission_air, transmission_water) if self.sensor else None                                # métrica para usar en sensor
@@ -229,7 +230,7 @@ class GLOnet():
                     g_mse = self.global_mse_function(sensor_signal) if self.sensor else self.global_mse_function(transmission)           #GU: mse
                     mse_per_sample = self.batch_mse_function(sensor_signal) if self.sensor else self.batch_mse_function(transmission)    #GU: mse batch 
 
-                    FM = torch.pow(sensor_signal - 0.25, 2) if self.sensor else torch.pow(transmission - self.target_spectra, 2)         # VER AGREGADO DE DONDE VIENE
+                    FM = torch.pow(sensor_signal - difrel_Obj, 2) if self.sensor else torch.pow(transmission - self.target_spectra, 2)         # VER AGREGADO DE DONDE VIENE
                               
                 # record history
                 #self.record_history(g_loss, thicknesses, refractive_indices,g_mse)                  #GU: solo mse
@@ -458,8 +459,12 @@ class GLOnet():
     def batch_mse_function(self, reflection):                                #MSE DE CADA BATCH
         return torch.mean(torch.pow(reflection - self.target_spectra, 2), dim=(1,2,3))
         
-    def global_loss_function(self, reflection): #VER MÉTRICA DE SENSOR PORQUE USA 0.25
-        return -torch.mean(torch.exp(-torch.mean(torch.pow(reflection - self.target_spectra, 2), dim=(1,2,3))/self.sigma)) if not self.sensor else -torch.mean(torch.exp(-torch.pow(reflection - 0.25, 2)/self.sigma))
+    def global_loss_function(self, reflection): 
+        if self.sensor:
+            difrel_Obj = 1
+            -torch.mean(torch.exp(-torch.pow(sensor_signal - difrel_Obj, 2)/self.sigma)) # 
+        else:
+            return -torch.mean(torch.exp(-torch.mean(torch.pow(reflection - self.target_spectra, 2), dim=(1,2,3))/self.sigma)) 
         
     def global_loss_function_robust(self, reflection, thicknesses):
         metric = torch.mean(torch.pow(reflection - self.target_spectra, 2), dim=(1,2,3))

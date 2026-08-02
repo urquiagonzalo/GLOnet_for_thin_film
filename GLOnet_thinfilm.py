@@ -40,21 +40,20 @@ class GLOnet():
         
         # simulation parameters
         self.user_define = params.user_define
-        
+        if params.user_define:
+            self.n_database = params.n_database
+        else:
+            self.materials = params.materials
+            self.matdatabase = params.matdatabase
+            
         # True en programa principal selecciona el modo sensor con métrica modificada y False selecciona optimizador clásico con la loss clásica 
         if params.sensor: 
             self.sensor = True
         else:
             self.sensor = False
         
-        #GU5/9: True en programa principal considera refelexión o y False transmisión 
+        #GU5/9: #True en programa principal considera refelexión o y False transmisión 
         self.spectra = params.spectra 
-        
-        if params.user_define:
-            self.n_database = params.n_database
-        else:
-            self.materials = params.materials
-            self.matdatabase = params.matdatabase
 
         self.n_bot = params.n_bot.type(self.dtype)  # number of frequencies or 1
         self.n_top = params.n_top.type(self.dtype)  # number of frequencies or 1

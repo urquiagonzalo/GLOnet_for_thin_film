@@ -285,7 +285,7 @@ class GLOnet():
                     
                     n_database_water = self.to_cuda_if_available(self.matdatabase_water.interp_wv(2 * math.pi/kvector, self.materials_water, True).unsqueeze(0).unsqueeze(0))    # lee n
                     #n_database_water = self.to_cuda_if_available(self.matdatabase_water.interp_wv(2 * math.pi/kvector, self.materials_water, False).unsqueeze(0).unsqueeze(0))  # lee n y k
-                    ref_idx_full_water = torch.sum(P.unsqueeze(-1) * n_database_water, dim=2)
+                    ref_idx_water = torch.sum(P.unsqueeze(-1) * n_database_water, dim=2)
  
                     # Modificado para considerar refelexión (True en programa principal) o transmisión (False) 
                     if self.spectra:
@@ -475,7 +475,7 @@ class GLOnet():
     def global_loss_function(self, reflection): 
         if self.sensor:
             difrel_Obj = 1
-            -torch.mean(torch.exp(-torch.pow(sensor_signal - difrel_Obj, 2)/self.sigma)) # 
+            return -torch.mean(torch.exp(-torch.pow(sensor_signal - difrel_Obj, 2)/self.sigma)) # 
         else:
             return -torch.mean(torch.exp(-torch.mean(torch.pow(reflection - self.target_spectra, 2), dim=(1,2,3))/self.sigma)) 
         

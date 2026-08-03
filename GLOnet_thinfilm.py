@@ -42,16 +42,16 @@ class GLOnet():
         self.user_define = params.user_define
         if params.user_define:
             if self.sensor:
-                self.n_database_Aire = params.n_database_Aire
-                self.n_database_Agua = params.n_database_Agua
+                self.n_database_air = params.n_database_air
+                self.n_database_water = params.n_database_water
             else:    
                 self.n_database = params.n_database
         else:
             if self.sensor:
-                self.materials_Aire   = params.materials_Aire
-                self.matdatabase_Aire = params.matdatabase_Aire
-                self.materials_Agua   = params.materials_Agua
-                self.matdatabase_Agua = params.matdatabase_Agua
+                self.materials_air   = params.materials_air
+                self.matdatabase_air = params.matdatabase_air
+                self.materials_water  = params.materials_water
+                self.matdatabase_water = params.matdatabase_water
             else:    
                 self.materials = params.materials
                 self.matdatabase = params.matdatabase

@@ -88,10 +88,10 @@ class ResGenerator(nn.Module):
         self.M_materials = params.M_materials
         self.sensor = params.sensor
         if self.sensor:
-            self.n_database_air = params.n_database_air.view(1, 1, params.M_materials, -1) # 1 x 1 x number of mat x number of freq
-            self.n_database_water = params.n_database_water.view(1, 1, params.M_materials, -1) # 1 x 1 x number of mat x number of freq
+            self.n_database_air = params.n_database_air.view(1, 1, params.M_materials, -1).cuda()     # 1 x 1 x number of mat x number of freq
+            self.n_database_water = params.n_database_water.view(1, 1, params.M_materials, -1).cuda() # 1 x 1 x number of mat x number of freq
         else:
-            self.n_database = params.n_database.view(1, 1, params.M_materials, -1).cuda() # 1 x 1 x number of mat x number of freq
+            self.n_database = params.n_database.view(1, 1, params.M_materials, -1).cuda()             # 1 x 1 x number of mat x number of freq
         
         self.initBLOCK = nn.Sequential(
             nn.Linear(self.noise_dim, self.res_dim),

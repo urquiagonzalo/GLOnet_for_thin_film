@@ -35,9 +35,14 @@ class Generator(nn.Module):
         X = net[:, :, 1:]
         
         P = F.softmax(X * alpha, dim = 2).unsqueeze(-1) # batch size x number of layer x number of mat x 1
-        refractive_indices = torch.sum(P * self.n_database, dim=2) # batch size x number of layer x number of freq
-        
-        return (thicknesses, refractive_indices, P.squeeze())
+
+        if self.sensor:
+            refractive_indices_air = torch.sum(P * self.n_database_air, dim=2) # batch size x number of layer x number of freq
+            refractive_indices_water = torch.sum(P * self.n_database_water, dim=2) # batch size x number of layer x number of freq
+            return (thicknesses, refractive_indices_air, refractive_indices_water, P.squeeze())
+        else:
+            refractive_indices = torch.sum(P * self.n_database, dim=2) # batch size x number of layer x number of freq
+            return (thicknesses, refractive_indices, P.squeeze())
 
 
 

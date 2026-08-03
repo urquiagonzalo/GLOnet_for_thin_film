@@ -41,11 +41,21 @@ class GLOnet():
         # simulation parameters
         self.user_define = params.user_define
         if params.user_define:
-            self.n_database = params.n_database
+            if self.sensor:
+                self.n_database_Aire = params.n_database_Aire
+                self.n_database_Agua = params.n_database_Agua
+            else:    
+                self.n_database = params.n_database
         else:
-            self.materials = params.materials
-            self.matdatabase = params.matdatabase
-            
+            if self.sensor:
+                self.materials_Aire   = params.materials_Aire
+                self.matdatabase_Aire = params.matdatabase_Aire
+                self.materials_Agua   = params.materials_Agua
+                self.matdatabase_Agua = params.matdatabase_Agua
+            else:    
+                self.materials = params.materials
+                self.matdatabase = params.matdatabase
+ 
         # True en programa principal selecciona el modo sensor con métrica modificada y False selecciona optimizador clásico con la loss clásica 
         if params.sensor: 
             self.sensor = True

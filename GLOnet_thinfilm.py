@@ -244,7 +244,10 @@ class GLOnet():
                               
                 # record history
                 #self.record_history(g_loss, thicknesses, refractive_indices,g_mse)                  #GU: solo mse
-                self.record_history(g_loss, thicknesses, refractive_indices,g_mse, mse_per_sample)   #GU: mse y mse por batch
+                if self.sensor:
+                    self.record_history(g_loss, thicknesses, refractive_indices_air,g_mse, mse_per_sample)   #GU: mse y mse por batch
+                else:
+                    self.record_history(g_loss, thicknesses, refractive_indices,g_mse, mse_per_sample)   #GU: mse y mse por batch
                 
                 # train the generator
                 g_loss.backward()

@@ -474,12 +474,12 @@ class GLOnet():
     def batch_mse_function(self, reflection):                                #MSE DE CADA BATCH
         return torch.mean(torch.pow(reflection - self.target_spectra, 2), dim=(1,2,3))
         
-    def global_loss_function(self, reflection): 
+    def global_loss_function(self, signal): # signal: sensor_signal en modo sensor y reflection en modo común  
         if self.sensor:
             difrel_Obj = 1
-            return -torch.mean(torch.exp(-torch.pow(sensor_signal - difrel_Obj, 2)/self.sigma)) # 
+            return -torch.mean(torch.exp(-torch.pow(signal - difrel_Obj, 2)/self.sigma)) # 
         else:
-            return -torch.mean(torch.exp(-torch.mean(torch.pow(reflection - self.target_spectra, 2), dim=(1,2,3))/self.sigma)) 
+            return -torch.mean(torch.exp(-torch.mean(torch.pow(signal - self.target_spectra, 2), dim=(1,2,3))/self.sigma)) 
         
     def global_loss_function_robust(self, reflection, thicknesses):
         metric = torch.mean(torch.pow(reflection - self.target_spectra, 2), dim=(1,2,3))

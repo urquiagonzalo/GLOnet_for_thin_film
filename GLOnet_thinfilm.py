@@ -453,7 +453,7 @@ class GLOnet():
     def sensor_signal_2(self, k, spectra_empty, spectra_full_A, spectra_full_B):
         lambdas = 2 * math.pi / self.k
         led_x_ldr = torch.from_numpy(self.led_spline(lambdas) * self.ldr_spline(lambdas)).type(self.dtype)
-        int_led = self.spectra_int(torch.from_numpy(self.led_spline(lambdas)).type(self.dtype)), self.k, dim = 0)
+        int_led = self.spectra_int(torch.from_numpy(self.led_spline(lambdas).type(self.dtype)), self.k, dim = 0)
         signal_empty = torch.matmul(spectra_empty.squeeze(),torch.diag(led_x_ldr))
         signal_empty_int = self.spectra_int(signal_empty, self.k, dim = 1)
         signal_A = torch.matmul(spectra_full_A.squeeze(),torch.diag(led_x_ldr))

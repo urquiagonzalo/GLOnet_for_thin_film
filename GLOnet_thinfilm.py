@@ -145,9 +145,14 @@ class GLOnet():
                 
                 #3️⃣ Guardar nombres de materiales por capa
                 result_mat = torch.argmax(P, dim=2).detach().cpu().numpy()
+                if self.sensor:
+                    materials_save = self.materials_air
+                else:
+                    materials_save = self.materials
+                    
                 with open(f"Materiales_iter_{it}_Semilla{seed}.txt", 'w') as f:
                     for row in result_mat:
-                        f.write(','.join([self.materials[i] for i in row]) + '\n')
+                        f.write(','.join([materials_save[i] for i in row]) + '\n')
                         
                 # ============================================================
                 #        DESCARGAR SÓLO ALGUNAS ITERACIONES DEFINIDAS

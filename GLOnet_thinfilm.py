@@ -138,8 +138,8 @@ class GLOnet():
                 thicknesses_np * 1000, fmt="%.6f")
                 
                 # 2️⃣ Guardar índices de refracción (aplanado a 2D)
-                refidx_np = refractive_indices.detach().cpu().numpy()
-                refidx_flat = refidx_np.reshape(-1, refidx_np.shape[2])
+                #refidx_np = refractive_indices.detach().cpu().numpy()
+                #refidx_flat = refidx_np.reshape(-1, refidx_np.shape[2])
                 # np.savetxt(f"refidx_iter_{it}_Semilla{seed}.txt",
                            #refidx_flat, fmt="%.6f")
                 

@@ -37,6 +37,12 @@ class GLOnet():
         self.alpha_sup = params.alpha_sup
         self.iter0 = 0
         self.alpha = 0.1
+
+        # True en programa principal selecciona el modo sensor con métrica modificada y False selecciona optimizador clásico con la loss clásica 
+        if params.sensor: 
+            self.sensor = True
+        else:
+            self.sensor = False
         
         # simulation parameters
         self.user_define = params.user_define
@@ -55,13 +61,7 @@ class GLOnet():
             else:    
                 self.materials = params.materials
                 self.matdatabase = params.matdatabase
- 
-        # True en programa principal selecciona el modo sensor con métrica modificada y False selecciona optimizador clásico con la loss clásica 
-        if params.sensor: 
-            self.sensor = True
-        else:
-            self.sensor = False
-        
+
         #GU5/9: #True en programa principal considera refelexión o y False transmisión 
         self.spectra = params.spectra 
 

@@ -12,6 +12,7 @@ class Generator(nn.Module):
         self.thickness_l = params.thickness_l    #GU:Define el espesor mínimo posible
         self.N_layers = params.N_layers
         self.M_materials = params.M_materials
+        self.sensor = params.sensor
         if self.sensor:
             self.n_database_air = params.n_database_air.view(1, 1, params.M_materials, -1) # 1 x 1 x number of mat x number of freq
             self.n_database_water = params.n_database_water.view(1, 1, params.M_materials, -1) # 1 x 1 x number of mat x number of freq

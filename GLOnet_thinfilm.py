@@ -284,12 +284,10 @@ class GLOnet():
                 if self.user_define:
                     ref_idx_air, ref_idx_water = refractive_indices_air, refractive_indices_water
                 else:   
-                    n_database_air = self.matdatabase_air.interp_wv(2 * math.pi/kvector, self.materials_air, True).unsqueeze(0).unsqueeze(0).type(self.dtype)          # lee n
-                    #n_database_air = self.matdatabase_air.interp_wv(2 * math.pi/kvector, self.materials_air, False).unsqueeze(0).unsqueeze(0).type(self.dtype)        # lee n y k
+                    n_database_air = self.matdatabase_air.interp_wv(2 * math.pi/kvector, self.materials_air, True).unsqueeze(0).unsqueeze(0).type(self.dtype)          # False usa n y k
                     ref_idx_air = torch.sum(P.unsqueeze(-1) * n_database_air, dim=2)
                     
-                    n_database_water = self.matdatabase_water.interp_wv(2 * math.pi/kvector, self.materials_water, True).unsqueeze(0).unsqueeze(0).type(self.dtype)    # lee n
-                    #n_database_water= self.matdatabase_water.interp_wv(2 * math.pi/kvector, self.materials_water, False).unsqueeze(0).unsqueeze(0).type(self.dtype)   # lee n y k
+                    n_database_water = self.matdatabase_water.interp_wv(2 * math.pi/kvector, self.materials_water, True).unsqueeze(0).unsqueeze(0).type(self.dtype)    # False usa n y k
                     ref_idx_water = torch.sum(P.unsqueeze(-1) * n_database_water, dim=2)
  
                     # Modificado para considerar refelexión (True en programa principal) o transmisión (False) 
@@ -312,28 +310,24 @@ class GLOnet():
         else:
             thicknesses, refractive_indices, P = self.generator(z, self.alpha)
             result_mat = torch.argmax(P, dim=2).detach() # batch size x number of layer
-            
+    
             if not grayscale:     
                 if self.user_define:
                     n_database = self.n_database # do not support dispersion    
                 else:
-                    n_database = self.matdatabase.interp_wv(2 * math.pi/kvector, self.materials, True).unsqueeze(0).unsqueeze(0).type(self.dtype)      # lee n
-                    
-                    #n_database = self.matdatabase.interp_wv(2 * math.pi / kvector,self.materials,False)                                                 # con lectura n y k (ver la idea)                 
+                    n_database = self.matdatabase.interp_wv(2 * math.pi/kvector, self.materials, True).unsqueeze(0).unsqueeze(0).type(self.dtype)      # False usa n y k           
                     #if isinstance(n_database, tuple): 
                     #    n_database = torch.stack(n_database, dim=-1)
                     #n_database_complex = torch.complex(n_database[..., 0],n_database[..., 1]).to(P.device)                                              
              
                 one_hot = torch.eye(len(self.materials)).type(self.dtype)
                 ref_idx = torch.sum(one_hot[result_mat].unsqueeze(-1) * n_database, dim=2)
-                #ref_idx = torch.sum(one_hot[result_mat].unsqueeze(-1) * n_database_complex, dim=2)                                                      # con lectura n y k 
+                #ref_idx = torch.sum(one_hot[result_mat].unsqueeze(-1) * n_database_complex, dim=2)                                                     # con lectura n y k 
             else:
                 if self.user_define:
                     ref_idx = refractive_indices
                 else:
-                    n_database = self.matdatabase.interp_wv(2 * math.pi/kvector, self.materials, True).unsqueeze(0).unsqueeze(0).type(self.dtype)      # lee n
-                    
-                    #n_database = self.matdatabase.interp_wv(2 * math.pi/kvector, self.materials, False)                                                 # con lectura n y k (ver la idea)  
+                    n_database = self.matdatabase.interp_wv(2 * math.pi/kvector, self.materials, True).unsqueeze(0).unsqueeze(0).type(self.dtype)       # False usa n y k
                     #if isinstance(n_database, tuple):
                     #    n_database = torch.stack(n_database, dim=-1)
                     #n_database_complex = torch.complex(n_database[..., 0],n_database[..., 1]).to(P.device)                                           
@@ -355,8 +349,8 @@ class GLOnet():
             n_database_air = self.n_database_air.type(self.dtype)      # do not support dispersion
             n_database_water = self.n_database_water.type(self.dtype)  # do not support dispersion
         else:
-            n_database_air  = self.matdatabase_air.interp_wv(2 * math.pi / kvector, self.materials_air, False).unsqueeze(0).unsqueeze(0).type(self.dtype)
-            n_database_water= self.matdatabase_water.interp_wv(2 * math.pi / kvector, self.materials_water, False).unsqueeze(0).unsqueeze(0).type(self.dtype)
+            n_database_air  = self.matdatabase_air.interp_wv(2 * math.pi / kvector, self.materials_air, True).unsqueeze(0).unsqueeze(0).type(self.dtype)          # False usa n y k
+            n_database_water= self.matdatabase_water.interp_wv(2 * math.pi / kvector, self.materials_water, True).unsqueeze(0).unsqueeze(0).type(self.dtype)      # False usa n y k
         one_hot = torch.eye(len(self.materials_air)).type(self.dtype)
         one_hot_mat = one_hot[result_mat].unsqueeze(-1)
         ref_idx_air   = torch.sum(one_hot_mat * n_database_air, dim=2)

@@ -336,10 +336,10 @@ class GLOnet():
         
             #GU5/9: modificado para considerar refelexión (True en programa principal) o transmisión (False) 
             if self.spectra:
-                reflection = TMM_solver(self, thicknesses, ref_idx, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
+                reflection = TMM_solver(thicknesses, ref_idx, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
                 return (thicknesses, ref_idx, result_mat, reflection)
             else:
-                transmission = TMM_solver(self, thicknesses, ref_idx, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
+                transmission = TMM_solver(thicknesses, ref_idx, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
                 return (thicknesses, ref_idx, result_mat, transmission)
 
     # Función extra

@@ -207,19 +207,19 @@ class GLOnet():
                 #GU5/9: modificado para considerar refelexión (True en programa principal) o transmisión (False) 
                 if self.spectra:
                     if self.sensor:
-                        reflection_air = TMM_solver(thicknesses,refractive_indices_air, self.n_bot, self.n_top, self.k, self.theta, self.pol)
-                        reflection_water = TMM_solver(thicknesses,refractive_indices_water, self.n_bot, self.n_top, self.k, self.theta, self.pol)
+                        reflection_air = TMM_solver(self,thicknesses,refractive_indices_air, self.n_bot, self.n_top, self.k, self.theta, self.pol)
+                        reflection_water = TMM_solver(self,thicknesses,refractive_indices_water, self.n_bot, self.n_top, self.k, self.theta, self.pol)
                     else: # optimizador clásico
-                        reflection = TMM_solver(thicknesses, refractive_indices, self.n_bot, self.n_top, self.k, self.theta, self.pol)
+                        reflection = TMM_solver(self,thicknesses, refractive_indices, self.n_bot, self.n_top, self.k, self.theta, self.pol)
                 else:    
                     if self.sensor:
-                        transmission_air = TMM_solver(thicknesses,refractive_indices_air, self.n_bot, self.n_top, self.k, self.theta, self.pol)
-                        transmission_water = TMM_solver(thicknesses,refractive_indices_water, self.n_bot, self.n_top, self.k, self.theta, self.pol)
+                        transmission_air = TMM_solver(self,thicknesses,refractive_indices_air, self.n_bot, self.n_top, self.k, self.theta, self.pol)
+                        transmission_water = TMM_solver(self,thicknesses,refractive_indices_water, self.n_bot, self.n_top, self.k, self.theta, self.pol)
                     else: # optimizador clásico
-                        transmission = TMM_solver(thicknesses, refractive_indices, self.n_bot, self.n_top, self.k, self.theta, self.pol) #GU5/9: agrego transmisión        
+                        transmission = TMM_solver(self,thicknesses, refractive_indices, self.n_bot, self.n_top, self.k, self.theta, self.pol) #GU5/9: agrego transmisión        
                
                 # GU5/9: podrían ser las dos (VER)
-                # reflection, transmission = TMM_solver(thicknesses, refractive_indices, self.n_bot, self.n_top, self.k, self.theta, self.pol)
+                # reflection, transmission = TMM_solver(self,thicknesses, refractive_indices, self.n_bot, self.n_top, self.k, self.theta, self.pol)
 
                 # free optimizer buffer 
                 self.optimizer.zero_grad()
@@ -292,15 +292,15 @@ class GLOnet():
  
             # Modificado para considerar refelexión (True en programa principal) o transmisión (False) 
             if self.spectra:
-                reflection_air   = TMM_solver(thicknesses, ref_idx_air, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
-                reflection_water = TMM_solver(thicknesses, ref_idx_water, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
+                reflection_air   = TMM_solver(self,thicknesses, ref_idx_air, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
+                reflection_water = TMM_solver(self,thicknesses, ref_idx_water, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
                 
                 sensor_signal = self.sensor_signal_1(kvector.type(self.dtype), reflection_air, reflection_water)
                 #sensor_signal = self.sensor_signal_2(kvector.type(self.dtype), reflection_empty, reflection_full_A, reflection_full_B)      # 2 materiales distintos
                 return (thicknesses, result_mat, sensor_signal, ref_idx_air, reflection_air, ref_idx_water, reflection_water)
             else:
-                transmission_air   = TMM_solver(thicknesses, ref_idx_air  , self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
-                transmission_water = TMM_solver(thicknesses, ref_idx_water, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
+                transmission_air   = TMM_solver(self,thicknesses, ref_idx_air  , self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
+                transmission_water = TMM_solver(self,thicknesses, ref_idx_water, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
                 sensor_signal = self.sensor_signal_1(kvector.type(self.dtype), transmission_air, transmission_water)
                 #sensor_signal = self.sensor_signal_2(kvector.type(self.dtype), transmission_empty, transmission_full_A, transmission_full_B) # 2 materiales distintos
                 return (thicknesses, result_mat, sensor_signal, ref_idx_air, transmission_air, ref_idx_water, transmission_water)
@@ -336,10 +336,10 @@ class GLOnet():
         
             #GU5/9: modificado para considerar refelexión (True en programa principal) o transmisión (False) 
             if self.spectra:
-                reflection = TMM_solver(thicknesses, ref_idx, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
+                reflection = TMM_solver(self,thicknesses, ref_idx, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
                 return (thicknesses, ref_idx, result_mat, reflection)
             else:
-                transmission = TMM_solver(thicknesses, ref_idx, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
+                transmission = TMM_solver(self,thicknesses, ref_idx, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
                 return (thicknesses, ref_idx, result_mat, transmission)
 
     # Función extra
@@ -374,12 +374,12 @@ class GLOnet():
             ref_idx_water = torch.sum(one_hot_mat * n_database_water, dim=2)
 
             if self.spectra:
-                reflection_air     = TMM_solver(thicknesses, ref_idx_air, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
-                reflection_water   = TMM_solver(thicknesses, ref_idx_water, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
+                reflection_air     = TMM_solver(self,thicknesses, ref_idx_air, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
+                reflection_water   = TMM_solver(self,thicknesses, ref_idx_water, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
                 return (reflection_air, reflection_water) 
             else:
-                transmission_air   = TMM_solver(thicknesses, ref_idx_air, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
-                transmission_water = TMM_solver(thicknesses, ref_idx_water, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
+                transmission_air   = TMM_solver(self,thicknesses, ref_idx_air, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
+                transmission_water = TMM_solver(self,thicknesses, ref_idx_water, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
                 return (transmission_air, transmission_water)
 
         # ELSE PARA TRABAJAR CON LA VERSIÓN ORIGINAL
@@ -401,14 +401,14 @@ class GLOnet():
             ref_idx = torch.sum(one_hot[result_mat].unsqueeze(-1) * n_database, dim=2)
             #ref_idx = torch.sum(one_hot[result_mat].unsqueeze(-1) * n_database_complex, dim=2)
             
-            #reflection = TMM_solver(thicknesses, ref_idx, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
+            #reflection = TMM_solver(self,thicknesses, ref_idx, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
             #return reflection
             #GU5/9: modificado para considerar refelexión (True en programa principal) o transmisión (False) 
             if self.spectra:
-                reflection = TMM_solver(thicknesses, ref_idx, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
+                reflection = TMM_solver(self,thicknesses, ref_idx, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
                 return reflection
             else: 
-                transmission = TMM_solver(thicknesses, ref_idx, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
+                transmission = TMM_solver(self,thicknesses, ref_idx, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
                 return transmission
 
     def update_alpha(self, normIter):

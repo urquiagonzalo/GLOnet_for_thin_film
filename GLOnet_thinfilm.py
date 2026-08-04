@@ -374,12 +374,12 @@ class GLOnet():
             ref_idx_water = torch.sum(one_hot_mat * n_database_water, dim=2)
 
             if self.spectra:
-                reflection_air     = TMM_solver(thicknesses, ref_idx_air, self.n_bot, self.n_top, kvector, inc_angles, pol)
-                reflection_water   = TMM_solver(thicknesses, ref_idx_water, self.n_bot, self.n_top, kvector, inc_angles, pol)
+                reflection_air     = TMM_solver(thicknesses, ref_idx_air, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
+                reflection_water   = TMM_solver(thicknesses, ref_idx_water, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
                 return (reflection_air, reflection_water) 
             else:
-                transmission_air   = TMM_solver(thicknesses, ref_idx_air, self.n_bot, self.n_top, kvector, inc_angles, pol)
-                transmission_water = TMM_solver(thicknesses, ref_idx_water, self.n_bot, self.n_top, kvector, inc_angles, pol)
+                transmission_air   = TMM_solver(thicknesses, ref_idx_air, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
+                transmission_water = TMM_solver(thicknesses, ref_idx_water, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
                 return (transmission_air, transmission_water)
 
         # ELSE PARA TRABAJAR CON LA VERSIÓN ORIGINAL

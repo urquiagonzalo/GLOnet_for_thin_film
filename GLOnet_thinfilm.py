@@ -207,16 +207,16 @@ class GLOnet():
                 #GU5/9: modificado para considerar refelexión (True en programa principal) o transmisión (False) 
                 if self.spectra:
                     if self.sensor:
-                        reflection_air = TMM_solver(self, thicknesses,refractive_indices_air, self.n_bot, self.n_top, self.k, self.theta, self.pol)
-                        reflection_water = TMM_solver(self, thicknesses,refractive_indices_water, self.n_bot, self.n_top, self.k, self.theta, self.pol)
+                        reflection_air = TMM_solver(thicknesses,refractive_indices_air, self.n_bot, self.n_top, self.k, self.theta, self.pol)
+                        reflection_water = TMM_solver(thicknesses,refractive_indices_water, self.n_bot, self.n_top, self.k, self.theta, self.pol)
                     else: # optimizador clásico
-                        reflection = TMM_solver(self, thicknesses, refractive_indices, self.n_bot, self.n_top, self.k, self.theta, self.pol)
+                        reflection = TMM_solver(thicknesses, refractive_indices, self.n_bot, self.n_top, self.k, self.theta, self.pol)
                 else:    
                     if self.sensor:
-                        transmission_air = TMM_solver(self, thicknesses,refractive_indices_air, self.n_bot, self.n_top, self.k, self.theta, self.pol)
-                        transmission_water = TMM_solver(self, thicknesses,refractive_indices_water, self.n_bot, self.n_top, self.k, self.theta, self.pol)
+                        transmission_air = TMM_solver(thicknesses,refractive_indices_air, self.n_bot, self.n_top, self.k, self.theta, self.pol)
+                        transmission_water = TMM_solver(thicknesses,refractive_indices_water, self.n_bot, self.n_top, self.k, self.theta, self.pol)
                     else: # optimizador clásico
-                        transmission = TMM_solver(self, thicknesses, refractive_indices, self.n_bot, self.n_top, self.k, self.theta, self.pol) #GU5/9: agrego transmisión        
+                        transmission = TMM_solver(thicknesses, refractive_indices, self.n_bot, self.n_top, self.k, self.theta, self.pol) #GU5/9: agrego transmisión        
                
                 # GU5/9: podrían ser las dos (VER)
                 # reflection, transmission = TMM_solver(thicknesses, refractive_indices, self.n_bot, self.n_top, self.k, self.theta, self.pol)

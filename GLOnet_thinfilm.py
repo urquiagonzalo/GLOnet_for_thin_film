@@ -279,33 +279,33 @@ class GLOnet():
             result_mat = torch.argmax(P, dim=2).detach() # batch size x number of layer
             
             if not grayscale:
-                ref_idx_air, ref_idx_water  = self._calculate_refractive_indices(kvector)     # calculate_refractive_indices es una función definida más abajo
+                ref_idx_air, ref_idx_water  = self._calculate_refractive_indices(result_mat,kvector)     # calculate_refractive_indices es una función definida más abajo
             else:
                 if self.user_define:
                     ref_idx_air, ref_idx_water = refractive_indices_air, refractive_indices_water
                 else:   
-                    n_database_air = self.to_cuda_if_available(self.matdatabase_air.interp_wv(2 * math.pi/kvector, self.materials_air, True).unsqueeze(0).unsqueeze(0))          # lee n
-                    #n_database_air = self.to_cuda_if_available(self.matdatabase_air.interp_wv(2 * math.pi/kvector, self.materials_air, False).unsqueeze(0).unsqueeze(0))        # lee n y k
+                    n_database_air = self.matdatabase_air.interp_wv(2 * math.pi/kvector, self.materials_air, True).unsqueeze(0).unsqueeze(0).type(self.dtype)          # lee n
+                    #n_database_air = self.matdatabase_air.interp_wv(2 * math.pi/kvector, self.materials_air, False).unsqueeze(0).unsqueeze(0).type(self.dtype)        # lee n y k
                     ref_idx_air = torch.sum(P.unsqueeze(-1) * n_database_air, dim=2)
                     
-                    n_database_water = self.to_cuda_if_available(self.matdatabase_water.interp_wv(2 * math.pi/kvector, self.materials_water, True).unsqueeze(0).unsqueeze(0))    # lee n
-                    #n_database_water = self.to_cuda_if_available(self.matdatabase_water.interp_wv(2 * math.pi/kvector, self.materials_water, False).unsqueeze(0).unsqueeze(0))  # lee n y k
+                    n_database_water = self.matdatabase_water.interp_wv(2 * math.pi/kvector, self.materials_water, True).unsqueeze(0).unsqueeze(0).type(self.dtype)    # lee n
+                    #n_database_water= self.matdatabase_water.interp_wv(2 * math.pi/kvector, self.materials_water, False).unsqueeze(0).unsqueeze(0).type(self.dtype)   # lee n y k
                     ref_idx_water = torch.sum(P.unsqueeze(-1) * n_database_water, dim=2)
  
                     # Modificado para considerar refelexión (True en programa principal) o transmisión (False) 
                     if self.spectra:
-                        reflection_air   = TMM_solver(thicknesses, ref_idx_air, self.n_bot, self.n_top, self.to_cuda_if_available(kvector), self.to_cuda_if_available(inc_angles), pol)
-                        reflection_water = TMM_solver(thicknesses, ref_idx_water, self.n_bot, self.n_top, self.to_cuda_if_available(kvector), self.to_cuda_if_available(inc_angles), pol)
+                        reflection_air   = TMM_solver(thicknesses, ref_idx_air, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
+                        reflection_water = TMM_solver(thicknesses, ref_idx_water, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
                         
-                        sensor_signal = self.sensor_signal_1(self.to_cuda_if_available(kvector), reflection_air, reflection_water)
-                        #sensor_signal = self.sensor_signal_2(self.to_cuda_if_available(kvector), reflection_empty, reflection_full_A, reflection_full_B)      # 2 materiales distintos
+                        sensor_signal = self.sensor_signal_1(kvector.type(self.dtype), reflection_air, reflection_water)
+                        #sensor_signal = self.sensor_signal_2(kvector.type(self.dtype), reflection_empty, reflection_full_A, reflection_full_B)      # 2 materiales distintos
                         return (thicknesses, result_mat, sensor_signal, ref_idx_air, reflection_air, ref_idx_water, reflection_water)
                     else:
-                        transmission_air   = TMM_solver(thicknesses, ref_idx_air  , self.n_bot, self.n_top, self.to_cuda_if_available(kvector), self.to_cuda_if_available(inc_angles), pol)
-                        transmission_water = TMM_solver(thicknesses, ref_idx_water, self.n_bot, self.n_top, self.to_cuda_if_available(kvector), self.to_cuda_if_available(inc_angles), pol)
+                        transmission_air   = TMM_solver(thicknesses, ref_idx_air  , self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
+                        transmission_water = TMM_solver(thicknesses, ref_idx_water, self.n_bot, self.n_top, kvector.type(self.dtype), inc_angles.type(self.dtype), pol)
                         
-                        sensor_signal = self.sensor_signal_1(self.to_cuda_if_available(kvector), transmission_air, transmission_water)
-                        #sensor_signal = self.sensor_signal_2(self.to_cuda_if_available(kvector), transmission_empty, transmission_full_A, transmission_full_B) # 2 materiales distintos
+                        sensor_signal = self.sensor_signal_1(kvector.type(self.dtype), transmission_air, transmission_water)
+                        #sensor_signal = self.sensor_signal_2(kvector.type(self.dtype), transmission_empty, transmission_full_A, transmission_full_B) # 2 materiales distintos
                         return (thicknesses, result_mat, sensor_signal, ref_idx_air, transmission_air, ref_idx_water, transmission_water)
         
         # ELSE PARA TRABAJAR CON LA VERSIÓN ORIGINAL
@@ -352,12 +352,12 @@ class GLOnet():
     # Función extra
     def _calculate_refractive_indices(self, result_mat, kvector):
         if self.user_define:
-            n_database_air = self.to_cuda_if_available(self.n_database_air)      # do not support dispersion
-            n_database_water = self.to_cuda_if_available(self.n_database_water)  # do not support dispersion
+            n_database_air = self.n_database_air.type(self.dtype)      # do not support dispersion
+            n_database_water = self.n_database_water.type(self.dtype)  # do not support dispersion
         else:
-            n_database_air  = self.to_cuda_if_available(self.matdatabase_air.interp_wv(2 * math.pi / kvector, self.materials_empty, False).unsqueeze(0).unsqueeze(0))
-            n_database_water = self.to_cuda_if_available(self.matdatabase_water.interp_wv(2 * math.pi / kvector, self.materials_full_A, False).unsqueeze(0).unsqueeze(0))
-        one_hot = self.to_cuda_if_available(torch.eye(len(self.materials_empty)))
+            n_database_air  = self.matdatabase_air.interp_wv(2 * math.pi / kvector, self.materials_air, False).unsqueeze(0).unsqueeze(0).type(self.dtype)
+            n_database_water= self.matdatabase_water.interp_wv(2 * math.pi / kvector, self.materials_water, False).unsqueeze(0).unsqueeze(0).type(self.dtype)
+        one_hot = torch.eye(len(self.materials_air)).type(self.dtype)
         one_hot_mat = one_hot[result_mat].unsqueeze(-1)
         ref_idx_air   = torch.sum(one_hot_mat * n_database_air, dim=2)
         ref_idx_water = torch.sum(one_hot_mat * n_database_water, dim=2)

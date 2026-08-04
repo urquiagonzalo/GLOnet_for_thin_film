@@ -364,10 +364,10 @@ class GLOnet():
                 inc_angles = self.theta
             if pol is None:
                 pol = self.pol  
-            n_database_air = self.matdatabase_air.interp_wv(2 * math.pi/kvector, self.materials_air, False).unsqueeze(0).unsqueeze(0)
-            n_database_water = self.matdatabase_water.interp_wv(2 * math.pi/kvector, self.materials_water, False).unsqueeze(0).unsqueeze(0)
+            n_database_air = self.matdatabase_air.interp_wv(2 * math.pi/kvector, self.materials_air, False).unsqueeze(0).unsqueeze(0).type(self.dtype)  
+            n_database_water = self.matdatabase_water.interp_wv(2 * math.pi/kvector, self.materials_water, False).unsqueeze(0).unsqueeze(0).type(self.dtype)  
             
-            one_hot = torch.eye(len(self.materials_empty))
+            one_hot = torch.eye(len(self.materials_air)).type(self.dtype)
             one_hot_mat = one_hot[result_mat].unsqueeze(-1)
             
             ref_idx_air   = torch.sum(one_hot_mat * n_database_air, dim=2)

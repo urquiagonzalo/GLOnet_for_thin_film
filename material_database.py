@@ -48,7 +48,6 @@ class MatDatabase(object):
 			k_data[i, :] = np.interp(wv_in, mat[0], mat[2])
 
 		if ignoreloss:
-			return torch.tensor(n_data, dtype=torch.float32)     # return torch.tensor(n_data)
+			return torch.tensor(n_data)
 		else:
-			return (torch.tensor(n_data, dtype=torch.float32),   # return (torch.tensor(n_data), torch.tensor(k_data))
-					torch.tensor(k_data, dtype=torch.float32))
+			return (torch.tensor(n_data), torch.tensor(k_data))

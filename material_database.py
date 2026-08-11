@@ -7,11 +7,11 @@ class MatDatabase(object):
 		Parameters: 
 			material_key: list of material names
 	"""
-	def __init__(self, material_key, database_folder): #GU8/9: modificado para considerar distintas carpetas desde el código principal. 
+	def __init__(self, material_key, database_folder): #GU: modificado para considerar distintas carpetas desde el código principal. 
 		super(MatDatabase, self).__init__()
 		self.material_key = material_key
 		self.num_materials = len(material_key)
-		self.database_folder = database_folder         #GU8/9: agregado para considerar distintas carpetas desde el código principal. 
+		self.database_folder = database_folder         #GU: agregado para considerar distintas carpetas desde el código principal. 
 		self.mat_database = self.build_database() 
 
 	def build_database(self):
@@ -19,8 +19,7 @@ class MatDatabase(object):
 		
 		#%% Read in the dispersion data of each material
 		for i in range(self.num_materials):
-			#GU8/9: modificado para considerar distintas carpetas desde el código principal. 
-			#GU8/9: en el programa principal agregué params.database_folder = '...' 
+			#GU: modificado para considerar distintas carpetas desde el código principal. En el programa principal se agrega params.database_folder = '...' 
 			file_name = f'./{self.database_folder}/mat_{self.material_key[i]}.xlsx'
 			
 			try: 
@@ -49,11 +48,7 @@ class MatDatabase(object):
 			k_data[i, :] = np.interp(wv_in, mat[0], mat[2])
 
 		if ignoreloss:
-			return torch.tensor(n_data)
+			return torch.tensor(n_data, dtype=torch.float32)     # return torch.tensor(n_data)
 		else:
-			return (torch.tensor(n_data), torch.tensor(k_data))
-
-
-
-
-		
+			return (torch.tensor(n_data, dtype=torch.float32),   # return (torch.tensor(n_data), torch.tensor(k_data))
+					torch.tensor(k_data, dtype=torch.float32))

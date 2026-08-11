@@ -97,9 +97,7 @@ class GLOnet():
         
     def train(self,seed):
         self.generator.train()
-
-        # GU7/12: Lista de iteraciones que querés descargar
-        self.iters_to_download = [400]
+        self.iters_to_download = [400] # Lista de iteraciones a descargar
             
         # training loop
         with tqdm(total=self.numIter) as t:
@@ -128,36 +126,25 @@ class GLOnet():
                 else:    
                     thicknesses, refractive_indices, P = self.generator(z, self.alpha) #
                 
-                # ---------------------------------------------------------
-                # AGREGADO PARA GUARDAR ESTRUCTURAS EN ALGUNAS ITERACIONES
-                # ---------------------------------------------------------
-
-                # 1️⃣ Guardar espesores
-                thicknesses_np = thicknesses.detach().cpu().numpy()
-                np.savetxt(f"Espesores_iter_{it}_Semilla{seed}.txt",
-                thicknesses_np * 1000, fmt="%.6f")
-                
-                # 2️⃣ Guardar índices de refracción (aplanado a 2D)
-                #refidx_np = refractive_indices.detach().cpu().numpy()
-                #refidx_flat = refidx_np.reshape(-1, refidx_np.shape[2])
-                # np.savetxt(f"refidx_iter_{it}_Semilla{seed}.txt",
-                           #refidx_flat, fmt="%.6f")
-                
-                #3️⃣ Guardar nombres de materiales por capa
-                result_mat = torch.argmax(P, dim=2).detach().cpu().numpy()
-                if self.sensor:
-                    materials_save = self.materials_air
-                else:
-                    materials_save = self.materials
-                    
-                with open(f"Materiales_iter_{it}_Semilla{seed}.txt", 'w') as f:
-                    for row in result_mat:
-                        f.write(','.join([materials_save[i] for i in row]) + '\n')
-                        
-                # ============================================================
-                #        DESCARGAR SÓLO ALGUNAS ITERACIONES DEFINIDAS
-                # ============================================================
+                # Agregado para trabajar con iteraciones especificas (it)
                 if it in self.iters_to_download:
+                    thicknesses_np = thicknesses.detach().cpu().numpy()
+                    np.savetxt(f"Espesores_iter_{it}_Semilla{seed}.txt", thicknesses_np * 1000, fmt="%.6f") # Guardar espesores de la iteración pedida                    
+                    result_mat = torch.argmax(P, dim=2).detach().cpu().numpy() # materiales por capa
+                    if self.sensor:
+                        materials_save = self.materials_air
+                    else:
+                        materials_save = self.materials
+                        
+                    with open(f"Materiales_iter_{it}_Semilla{seed}.txt", 'w') as f:
+                        for row in result_mat:
+                            f.write(','.join([materials_save[i] for i in row]) + '\n')
+
+                    # Guardar índices de refracción (aplanado a 2D)
+                    #refidx_np = refractive_indices.detach().cpu().numpy()
+                    #refidx_flat = refidx_np.reshape(-1, refidx_np.shape[2])
+                    #np.savetxt(f"refidx_iter_{it}_Semilla{seed}.txt", #refidx_flat, fmt="%.6f")
+
                     from google.colab import files
                     files.download(f"Espesores_iter_{it}_Semilla{seed}.txt")
                     #files.download(f"refidx_iter_{it}_Semilla{seed}.txt")

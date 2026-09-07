@@ -93,7 +93,8 @@ class GLOnet():
 
     # Función definida para interpolar los datos del LDR
     def _create_spline(self, filename):
-        df = pd.read_csv(filename, sep=';', decimal=',')
+        #df = pd.read_csv(filename, sep=';', decimal=',')
+        df = pd.read_csv(filename, sep=';', decimal=',', header=None)) # Archivo sin encabezado
         df.columns = ['Wavelength [nm]', 'Reflection spectra']
         spline = UnivariateSpline(df['Wavelength [nm]'] / 1000, df['Reflection spectra'])
         spline.set_smoothing_factor(0.006)
@@ -101,7 +102,7 @@ class GLOnet():
         
     # Función definida para interpolar los datos de los LEDs 
     def _create_interpolator(self, filename):
-        df = pd.read_csv(filename,sep='\t',decimal=',',)
+        df = pd.read_csv(filename,sep=';',decimal=',', header=None))
         df.columns = ['Wavelength', 'función']
         x = df['Wavelength'].to_numpy() / 1000 
         y = df['función'].to_numpy()

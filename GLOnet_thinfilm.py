@@ -5,6 +5,7 @@ import pandas as pd
 import math
 import torch.nn as nn
 import torch.nn.functional as F
+from scipy.interpolate import PchipInterpolator
 from scipy.interpolate import UnivariateSpline
 from TMM import *
 from tqdm import tqdm
@@ -65,6 +66,7 @@ class GLOnet():
 
         #GU5/9: #True en programa principal considera refelexión o y False transmisión 
         self.spectra = params.spectra 
+        self.Led = params.Led             # LED utilizado por el sensor
 
         self.n_bot = params.n_bot.type(self.dtype)  # number of frequencies or 1
         self.n_top = params.n_top.type(self.dtype)  # number of frequencies or 1
@@ -76,9 +78,12 @@ class GLOnet():
 
         # Si trabajamos en modo sensor, leemos los archivos CSV del LED y del LDR
         if self.sensor: 
-            self.led_spline = self._create_spline("true-green-osram.csv")
+            #self.led_spline = self._create_spline("true-green-osram.csv") # Archivo de Agus para interpolación  
             self.ldr_spline = self._create_spline("ldr.csv")
-        
+            self.green_led_interpolator = self._create_interpolator("LT-T64G-osram.csv")
+            self.blue_led_interpolator = self._create_interpolator("LB-T64G-osram.csv")
+            self.red_led_interpolator = self._create_interpolator("LR-T64F-osram.csv")
+
         # tranining history
         self.loss_training = []
         self.refractive_indices_training = []
@@ -86,14 +91,22 @@ class GLOnet():
         self.mse_training = []                                       #GU: mse
         self.batch_mse_training = []                                 #GU: mse batch
 
-    # Función definida para interpolar los datos de los archivos CSV del LED y del LDR
+    # Función definida para interpolar los datos del LDR
     def _create_spline(self, filename):
         df = pd.read_csv(filename, sep=';', decimal=',')
         df.columns = ['Wavelength [nm]', 'Reflection spectra']
         spline = UnivariateSpline(df['Wavelength [nm]'] / 1000, df['Reflection spectra'])
         spline.set_smoothing_factor(0.006)
         return spline
-    
+        
+    # Función definida para interpolar los datos de los LEDs 
+    def _create_interpolator(self, filename):
+        df = pd.read_csv(filename,sep='\t',decimal=',',)
+        df.columns = ['Wavelength', 'función']
+        x = df['Wavelength'].to_numpy() / 1000 
+        y = df['función'].to_numpy()
+        
+        return PchipInterpolator(x, y)
         
     def train(self,seed):
         self.generator.train()
@@ -415,12 +428,25 @@ class GLOnet():
     # Función que mide cuánta diferencia detecta un sensor entre dos espectros (vacío vs lleno), ponderado por la respuesta del sistema óptico
     def sensor_signal_1(self, k, spectra_empty, spectra_full): # función de la página 56
         lambdas = (2 * math.pi / self.k).detach().cpu().numpy()
+
+        # Selección del LED
+        if self.Led == 'g':
+            led_response = self.green_led_interpolator(lambdas)
+        elif self.Led == 'r':
+            led_response = self.red_led_interpolator(lambdas)   
+        elif self.Led == 'b':
+            led_response = self.blue_led_interpolator(lambdas)
+        elif self.Led == 'rgb':
+            led_response = (self.red_led_interpolator(lambdas)+ self.green_led_interpolator(lambdas)+ self.blue_led_interpolator(lambdas))
+        else:
+            raise ValueError("Led debe ser 'g', 'r', 'b' o 'rgb'")
+
         # La siguiente línea construye la respuesta espectral combinada del sistema (fuente (led)  + detector (ldr)) y la prepara como tensor en PyTorch. "R(λ)=LED(λ)⋅LDR(λ)"       
-        led_x_ldr = torch.from_numpy(self.led_spline(lambdas) * self.ldr_spline(lambdas)).type(self.dtype)  
+        led_x_ldr = torch.from_numpy(led_response * self.ldr_spline(lambdas)).type(self.dtype)  
         signal_empty = spectra_empty.squeeze()*(led_x_ldr)                   # Aplica la respuesta espectral del sistema (LED × LDR) al espectro spectra_empty, ponderando cada longitud de onda.
         signal_full  = spectra_full.squeeze()*(led_x_ldr)                    # Aplica la respuesta espectral del sistema (LED × LDR) al espectro spectra_full, ponderando cada longitud de onda.
-        signal_diff = signal_empty - signal_full                                                                           # Diferencia  
-        int_led = self.spectra_int(torch.from_numpy(self.led_spline(lambdas)*self.ldr_spline(lambdas)).type(self.dtype), self.k, dim = 0) # Calcula la integral del espectro del LED
+        signal_diff = signal_empty - signal_full                             # Diferencia  
+        int_led = self.spectra_int(torch.from_numpy(led_response*self.ldr_spline(lambdas)).type(self.dtype), self.k, dim = 0) # Calcula la integral del espectro del LED
         int_diff = self.spectra_int(signal_diff, self.k, dim = 1)                                                          # Calcula la integral de la diferencia de los espectros
         sensor_signal= torch.abs(int_diff)/int_led
         return sensor_signal  
@@ -428,8 +454,8 @@ class GLOnet():
     # Esta segunda función ya no mide una sola diferencia entre dos estados, sino que construye una métrica no lineal entre tres espectros distintos (A, B y vacío).
     def sensor_signal_2(self, k, spectra_empty, spectra_full_A, spectra_full_B):
         lambdas = (2 * math.pi / self.k).detach().cpu().numpy()
-        led_x_ldr = torch.from_numpy(self.led_spline(lambdas) * self.ldr_spline(lambdas)).type(self.dtype)
-        int_led = self.spectra_int(torch.from_numpy(self.led_spline(lambdas)*self.ldr_spline(lambdas)).type(self.dtype), self.k, dim = 0) # Calcula la integral del espectro del LED
+        led_x_ldr = torch.from_numpy(self.green_led_interpolator(lambdas) * self.ldr_spline(lambdas)).type(self.dtype)
+        int_led = self.spectra_int(torch.from_numpy(self.green_led_interpolator(lambdas)*self.ldr_spline(lambdas)).type(self.dtype), self.k, dim = 0) # Calcula la integral del espectro del LED
         
         signal_empty = spectra_empty.squeeze()*(led_x_ldr)
         signal_empty_int = self.spectra_int(signal_empty, self.k, dim = 1)
@@ -442,7 +468,7 @@ class GLOnet():
             signal_B = spectra_full_B.squeeze()*(led_x_ldr)
             signal_B_int = self.spectra_int(signal_B, self.k, dim = 1)
             signal_diff = (signal_empty_int - signal_A_int) * (signal_A_int - signal_B_int) * (signal_B_int - signal_empty_int) / (int_led **3)
-        #int_led = self.spectra_int(self.to_cuda_if_available(torch.from_numpy(self.led_spline(lambdas))), self.k, dim = 0)
+        #int_led = self.spectra_int(self.to_cuda_if_available(torch.from_numpy(self.green_led_interpolator(lambdas))), self.k, dim = 0)
         #int_diff = self.spectra_int(signal_diff, self.k, dim = 1)
         #sensor_signal= torch.abs(signal_diff)/int_led
         sensor_signal= torch.abs(signal_diff)

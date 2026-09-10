@@ -66,7 +66,9 @@ class GLOnet():
 
         #GU5/9: #True en programa principal considera refelexión o y False transmisión 
         self.spectra = params.spectra 
-        self.Led = params.Led             # LED utilizado por el sensor
+
+        if self.sensor:
+            self.Led = params.Led # LED utilizado por el sensor       
 
         self.n_bot = params.n_bot.type(self.dtype)  # number of frequencies or 1
         self.n_top = params.n_top.type(self.dtype)  # number of frequencies or 1

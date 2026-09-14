@@ -80,9 +80,10 @@ class GLOnet():
 
         # Si trabajamos en modo sensor, leemos los archivos CSV del LED y del LDR
         if self.sensor: 
-            #self.led_spline = self._create_spline("true-green-osram.csv") # Archivo de Agus para interpolación  
-            #self.ldr_spline = self._create_spline("ldr.csv") 
-            self.ldr_spline = self._create_spline("LDR_CdS.Se_GL5528.csv")
+            #self.led_spline = self._create_spline("true-green-osram.csv") # led verde de Agus    
+            #self.ldr_spline = self._create_spline("ldr.csv")              # ldr de Agustina     
+            self.ldr_spline = self._create_spline("LDR_CdS_GL5528.csv")
+            #self.ldr_spline = self._create_spline("LDR_CdS.Se_GL5528.csv")
             self.green_led_interpolator = self._create_interpolator("LT-T64G-osram.csv")
             self.blue_led_interpolator = self._create_interpolator("LB-T64G-osram.csv")
             self.red_led_interpolator = self._create_interpolator("LR-T64F-osram.csv")

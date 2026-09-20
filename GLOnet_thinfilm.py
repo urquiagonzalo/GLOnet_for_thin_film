@@ -437,7 +437,7 @@ class GLOnet():
         
         # Selección del LDR
         if self.Ldr == 'CdS':
-            ldr_detector = self.ldr_spline(lambdas)
+            ldr_detector = self.ldr_CdS_spline(lambdas)
         elif self.Ldr == 'CdSSe':
             ldr_detector = self.ldr_CdSSe_spline(lambdas)
         else:

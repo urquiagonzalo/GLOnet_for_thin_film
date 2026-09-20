@@ -68,7 +68,8 @@ class GLOnet():
         self.spectra = params.spectra 
 
         if self.sensor:
-            self.Led = params.Led # LED utilizado por el sensor       
+            self.Led = params.Led # LED utilizado por el sensor 
+            self.Ldr = params.Ldr # ldr utilizado por el sensor 
 
         self.n_bot = params.n_bot.type(self.dtype)  # number of frequencies or 1
         self.n_top = params.n_top.type(self.dtype)  # number of frequencies or 1
@@ -82,8 +83,8 @@ class GLOnet():
         if self.sensor: 
             #self.led_spline = self._create_spline("true-green-osram.csv") # led verde de Agus    
             #self.ldr_spline = self._create_spline("ldr.csv")              # ldr de Agustina     
-            #self.ldr_spline = self._create_spline("LDR_CdS_GL5528.csv")
-            self.ldr_spline = self._create_spline("LDR_CdS.Se_GL5528.csv")
+            self.ldr_CdS_spline = self._create_spline("LDR_CdS_GL5528.csv")
+            self.ldr_CdSSe_spline = self._create_spline("LDR_CdS.Se_GL5528.csv")
             self.green_led_interpolator = self._create_interpolator("LT-T64G-osram.csv")
             self.blue_led_interpolator = self._create_interpolator("LB-T64G-osram.csv")
             self.red_led_interpolator = self._create_interpolator("LR-T64F-osram.csv")
@@ -433,7 +434,15 @@ class GLOnet():
     # Función que mide cuánta diferencia detecta un sensor entre dos espectros (vacío vs lleno), ponderado por la respuesta del sistema óptico
     def sensor_signal_1(self, k, spectra_empty, spectra_full): # función de la página 56
         lambdas = (2 * math.pi / self.k).detach().cpu().numpy()
-
+        
+        # Selección del LDR
+        if self.Ldr == 'CdS':
+            ldr_detector = self.ldr_spline(lambdas)
+        elif self.Ldr == 'CdSSe':
+            ldr_detector = self.ldr_CdSSe_spline(lambdas)
+        else:
+            raise ValueError("Ldr debe ser 'CdS' o 'CdSSe'")
+            
         # Selección del LED
         if self.Led == 'g':
             led_response = self.green_led_interpolator(lambdas)
@@ -447,11 +456,11 @@ class GLOnet():
             raise ValueError("Led debe ser 'g', 'r', 'b' o 'rgb'")
 
         # La siguiente línea construye la respuesta espectral combinada del sistema (fuente (led)  + detector (ldr)) y la prepara como tensor en PyTorch. "R(λ)=LED(λ)⋅LDR(λ)"       
-        led_x_ldr = torch.from_numpy(led_response * self.ldr_spline(lambdas)).type(self.dtype)  
+        led_x_ldr = torch.from_numpy(led_response * ldr_detector).type(self.dtype)  
         signal_empty = spectra_empty.squeeze()*(led_x_ldr)                   # Aplica la respuesta espectral del sistema (LED × LDR) al espectro spectra_empty, ponderando cada longitud de onda.
         signal_full  = spectra_full.squeeze()*(led_x_ldr)                    # Aplica la respuesta espectral del sistema (LED × LDR) al espectro spectra_full, ponderando cada longitud de onda.
         signal_diff = signal_empty - signal_full                             # Diferencia  
-        int_led = self.spectra_int(torch.from_numpy(led_response*self.ldr_spline(lambdas)).type(self.dtype), self.k, dim = 0) # Calcula la integral del espectro del LED
+        int_led = self.spectra_int(torch.from_numpy(led_response * ldr_detector).type(self.dtype), self.k, dim = 0) # Calcula la integral del espectro del LED
         int_diff = self.spectra_int(signal_diff, self.k, dim = 1)                                                          # Calcula la integral de la diferencia de los espectros
         sensor_signal= torch.abs(int_diff)/int_led
         return sensor_signal  

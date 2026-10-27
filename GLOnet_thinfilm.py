@@ -517,7 +517,7 @@ class GLOnet():
     
         
     def viz_training(self,seed): 
-        import zipfile
+        #import zipfile
         #plt.figure(figsize = (20, 5))
         #plt.subplot(131)
         plt.plot(self.loss_training)
@@ -534,10 +534,9 @@ class GLOnet():
             for batch_mse in self.batch_mse_training:  # cada batch_mse es un np.array de tamaño batch_size
                 f.write(', '.join([f"{x:.8f}" for x in batch_mse]) + '\n')  # una línea por batch
         files.download(f"msexbatch{seed}.txt") 
-        
-        #with open(f"mse{seed}.txt", 'w') as f:                                      # Para guardar el MSE global (promedio de los todos los MSExbatch)
-            #f.write(', '.join([f"{x:.8f}" for x in self.mse_training]) + '\n\n')
-            #files.download(f"mse{seed}.txt") 
+        with open(f"mse{seed}.txt", 'w') as f:                                      # Para guardar el MSE global (promedio de los todos los MSExbatch)
+            f.write(', '.join([f"{x:.8f}" for x in self.mse_training]) + '\n\n')
+            files.download(f"mse{seed}.txt") 
 
 #Cada línea de sexbatch(seed).txt corresponde a una iteración. Cada línea tiene el mse correspondiente a cada batch. Si tengo 150 de bacth habrá 150 números. 
 #El promedio de todas estos números se guarda en el archivo mse(seed).txt. Este archivo tiene 400 números. cada número es el promedio de cada iteración. 

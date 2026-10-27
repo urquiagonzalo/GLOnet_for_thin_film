@@ -164,10 +164,10 @@ class GLOnet():
                     #refidx_flat = refidx_np.reshape(-1, refidx_np.shape[2])
                     #np.savetxt(f"refidx_iter_{it}_Semilla{seed}.txt", #refidx_flat, fmt="%.6f")
 
-                    from google.colab import files
-                    files.download(f"Espesores_iter_{it}_Semilla{seed}.txt")
+                    #from google.colab import files
+                    #files.download(f"Espesores_iter_{it}_Semilla{seed}.txt")
                     #files.download(f"refidx_iter_{it}_Semilla{seed}.txt")
-                    files.download(f"Materiales_iter_{it}_Semilla{seed}.txt")
+                    #files.download(f"Materiales_iter_{it}_Semilla{seed}.txt")
                     
                 ################################################################################    
                 ## if it == self.numIter:   # última iteración
@@ -529,14 +529,14 @@ class GLOnet():
         from google.colab import files  
         with open(f"loss{seed}.txt", 'w') as f:
             f.write(', '.join([f"{x:.8f}" for x in self.loss_training]) + '\n\n')
-            files.download(f"loss{seed}.txt")
+            #files.download(f"loss{seed}.txt")
         with open(f"msexbatch{seed}.txt", 'w') as f:
             for batch_mse in self.batch_mse_training:  # cada batch_mse es un np.array de tamaño batch_size
                 f.write(', '.join([f"{x:.8f}" for x in batch_mse]) + '\n')  # una línea por batch
-        files.download(f"msexbatch{seed}.txt") 
+        #files.download(f"msexbatch{seed}.txt") 
         with open(f"mse{seed}.txt", 'w') as f:                                      # Para guardar el MSE global (promedio de los todos los MSExbatch)
             f.write(', '.join([f"{x:.8f}" for x in self.mse_training]) + '\n\n')
-            files.download(f"mse{seed}.txt") 
+            #files.download(f"mse{seed}.txt") 
 
 #Cada línea de sexbatch(seed).txt corresponde a una iteración. Cada línea tiene el mse correspondiente a cada batch. Si tengo 150 de bacth habrá 150 números. 
 #El promedio de todas estos números se guarda en el archivo mse(seed).txt. Este archivo tiene 400 números. cada número es el promedio de cada iteración. 

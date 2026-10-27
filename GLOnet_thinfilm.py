@@ -534,8 +534,8 @@ class GLOnet():
             for batch_mse in self.batch_mse_training:  # cada batch_mse es un np.array de tamaño batch_size
                 f.write(', '.join([f"{x:.8f}" for x in batch_mse]) + '\n')  # una línea por batch
         #files.download(f"msexbatch{seed}.txt") 
-        with open(f"mse{seed}.txt", 'w') as f:                                      # Para guardar el MSE global (promedio de los todos los MSExbatch)
-            f.write(', '.join([f"{x:.8f}" for x in self.mse_training]) + '\n\n')
+        #with open(f"mse{seed}.txt", 'w') as f:                                      # Para guardar el MSE global (promedio de los todos los MSExbatch)
+            #f.write(', '.join([f"{x:.8f}" for x in self.mse_training]) + '\n\n')
             #files.download(f"mse{seed}.txt") 
 
 #Cada línea de sexbatch(seed).txt corresponde a una iteración. Cada línea tiene el mse correspondiente a cada batch. Si tengo 150 de bacth habrá 150 números. 
